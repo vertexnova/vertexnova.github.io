@@ -3,7 +3,7 @@ import '../styles/global.css';
 const { title = 'VertexNova', description = 'Multi-backend 3D rendering engine and AI dev workspace by Ajeet Yadav.' } = Astro.props;
 const path = Astro.url.pathname;
 const nav = [
-  { href: '/',          label: 'VertexNova Home' },
+  { href: '/',          label: 'Home' },
   { href: '/engine',    label: 'Engine'   },
   { href: '/setup',     label: 'Setup'    },
   { href: '/research',  label: 'Research' },
@@ -25,7 +25,7 @@ const nav = [
 <header class="site-header">
   <div class="container header-inner">
     <a href="/" class="logo">
-      <span class="logo-diamond"></span>
+      <img src="/favicon.svg" alt="VertexNova logo" class="logo-mark" />
       <span class="logo-text">VertexNova</span>
     </a>
     <nav class="site-nav">
@@ -50,7 +50,7 @@ const nav = [
   <div class="container footer-inner">
     <div class="footer-left">
       <a href="/" class="logo">
-        <span class="logo-diamond" style="width:16px;height:16px"></span>
+        <img src="/favicon.svg" alt="VertexNova logo" class="logo-mark logo-mark-sm" />
         <span class="logo-text" style="font-size:0.9rem">VertexNova</span>
       </a>
       <p style="margin-top:0.4rem;font-size:0.8rem">Multi-backend 3D rendering engine. Built by Ajeet Yadav.</p>
@@ -106,14 +106,12 @@ const nav = [
   text-decoration: none;
   flex-shrink: 0;
 }
-.logo-diamond {
+.logo-mark {
   width: 20px;
   height: 20px;
-  background: var(--orange);
-  transform: rotate(45deg);
-  border-radius: 3px;
   flex-shrink: 0;
 }
+.logo-mark-sm { width: 16px; height: 16px; }
 .logo-text {
   font-size: 1rem;
   font-weight: 600;
