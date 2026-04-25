@@ -315,6 +315,43 @@ docker ps | grep openshell</code></pre>
 
   </div>
 </section>
+
+<script>
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = (tab as HTMLElement).dataset.tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    if (target) document.getElementById(target)?.classList.add('active');
+  });
+});
+
+document.querySelectorAll('pre').forEach(el => {
+  const pre = el as HTMLElement;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'code-block';
+  pre.parentNode?.insertBefore(wrapper, pre);
+  wrapper.appendChild(pre);
+
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.textContent = 'copy';
+  wrapper.appendChild(btn);
+
+  btn.addEventListener('click', async () => {
+    const code = pre.querySelector('code') as HTMLElement | null;
+    const text = code?.innerText ?? pre.innerText;
+    await navigator.clipboard.writeText(text);
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+});
+</script>
 </BaseLayout>
 
 <style>
@@ -385,40 +422,3 @@ pre code { background: none; border: none; padding: 0; color: var(--text); }
   .cmd-row { grid-template-columns: 1fr; }
 }
 </style>
-
-<script>
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    const target = (tab as HTMLElement).dataset.tab;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    tab.classList.add('active');
-    if (target) document.getElementById(target)?.classList.add('active');
-  });
-});
-
-document.querySelectorAll('pre').forEach(el => {
-  const pre = el as HTMLElement;
-  const wrapper = document.createElement('div');
-  wrapper.className = 'code-block';
-  pre.parentNode?.insertBefore(wrapper, pre);
-  wrapper.appendChild(pre);
-
-  const btn = document.createElement('button');
-  btn.className = 'copy-btn';
-  btn.textContent = 'copy';
-  wrapper.appendChild(btn);
-
-  btn.addEventListener('click', async () => {
-    const code = pre.querySelector('code') as HTMLElement | null;
-    const text = code?.innerText ?? pre.innerText;
-    await navigator.clipboard.writeText(text);
-    btn.textContent = 'copied!';
-    btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = 'copy';
-      btn.classList.remove('copied');
-    }, 2000);
-  });
-});
-</script>

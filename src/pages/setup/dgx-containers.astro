@@ -539,6 +539,21 @@ docker images | grep vertexnova</code></pre>
 
   </div>
 </section>
+
+<script>
+const root = document.querySelector('.dgx-containers-page');
+if (root) {
+  root.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = (tab as HTMLElement).dataset.tab;
+      root.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      root.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      if (target) document.getElementById(target)?.classList.add('active');
+    });
+  });
+}
+</script>
 </BaseLayout>
 
 <style>
@@ -672,18 +687,3 @@ pre code { background: none; border: none; padding: 0; color: var(--text); }
   display: block;
 }
 </style>
-
-<script>
-const root = document.querySelector('.dgx-containers-page');
-if (root) {
-  root.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const target = (tab as HTMLElement).dataset.tab;
-      root.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      root.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      tab.classList.add('active');
-      if (target) document.getElementById(target)?.classList.add('active');
-    });
-  });
-}
-</script>
