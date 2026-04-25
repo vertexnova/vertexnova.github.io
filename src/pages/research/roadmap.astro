@@ -10,6 +10,7 @@ const phases = [
     goal: 'Understand 3DGS from first principles, get first scene rendering on DGX Spark, integrate into VertexNova.',
     steps: [
       { title: '3DGS theory — first principles', status: 'active', desc: 'Gaussian ellipsoids, tile-based rasterization, alpha blending, spherical harmonics. How it maps to existing OIT knowledge from surgical robotics visualization work.', link: '/research/3dgs-first-principles' },
+      { title: 'gsplat architecture and API (short guide)', status: 'active', desc: 'Short technical overview of gsplat, render pipeline stages, and practical API usage on DGX Spark.', link: '/research/gsplat' },
       { title: 'gsplat on DGX Spark — ARM64 build', status: 'done', desc: 'gsplat 1.5.3 from source on GB10 Blackwell. SM 12.0 arch, --no-build-isolation, PyTorch 2.7 compatibility.', link: '/research/gsplat-dgx-spark-build' },
       { title: 'First 3DGS scene rendering', status: 'active', desc: 'Download pre-trained garden scene. View in nerfstudio. Understand what the .ply file contains and how the rasterizer works.', link: null },
       { title: '3DGS viewer in VertexNova', status: 'planned', desc: 'Create vne3dgs module. Parse .ply Gaussian attributes. First OpenGL render pass — blobs on screen before beauty.', link: null },
