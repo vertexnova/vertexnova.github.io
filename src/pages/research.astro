@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
 
 const notes = [
   {
@@ -43,12 +44,11 @@ const notes = [
 
 <section class="section">
   <div class="container">
-    <span class="tag orange">Research notes</span>
-    <h1 style="margin-top:1rem">3DGS · Neural rendering · Vulkan</h1>
-    <p class="hero-desc" style="max-width:600px;margin-top:0.75rem">
-      Exploratory notes on 3D Gaussian Splatting, neural rendering techniques, and Vulkan ray tracing.
-      Rougher than blog posts — thinking out loud.
-    </p>
+    <PageHeader
+      eyebrow="Research notes"
+      title="3DGS · Neural rendering · Vulkan"
+      description="Exploratory notes on 3D Gaussian Splatting, neural rendering techniques, and Vulkan ray tracing. Rougher than blog posts — thinking out loud."
+    />
 
     <div class="notes-list" style="margin-top:3rem">
       {notes.map(n => (
@@ -72,7 +72,6 @@ const notes = [
 </BaseLayout>
 
 <style>
-.hero-desc { color: var(--muted); font-size: 1.05rem; }
 .notes-list { display: flex; flex-direction: column; gap: 1rem; }
 .note-card.draft { opacity: 0.55; }
 .note-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }

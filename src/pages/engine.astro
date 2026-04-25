@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
 
 const backends = [
   { name: 'Vulkan', status: 'active', desc: 'Primary backend, cross-platform' },
@@ -25,17 +26,17 @@ const platforms = ['macOS', 'iOS', 'visionOS', 'Linux', 'Windows', 'Web'];
 
 <section class="section">
   <div class="container">
-    <span class="tag orange">Open source · C++20</span>
-    <h1 style="margin-top:1rem">VertexNova Engine</h1>
-    <p class="hero-desc" style="max-width:640px;margin-top:0.75rem">
-      A modular, multi-backend 3D rendering engine built in modern C++20.
-      One unified RHI layer across Vulkan, Metal, OpenGL, and OpenGL ES —
-      build once, run on six platforms.
-    </p>
-    <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap">
-      <a href="https://learnvertexnova.com" target="_blank" class="btn btn-primary">Full docs ↗</a>
-      <a href="https://github.com/vertexnova" target="_blank" class="btn btn-ghost">GitHub ↗</a>
-    </div>
+    <PageHeader
+      eyebrow="Open source · C++20"
+      title="VertexNova Engine"
+      description="A modular, multi-backend 3D rendering engine built in modern C++20. One unified RHI layer across Vulkan, Metal, OpenGL, and OpenGL ES — build once, run on six platforms."
+      maxWidth="640px"
+    >
+      <div slot="actions" class="hero-actions">
+        <a href="https://learnvertexnova.com" target="_blank" class="btn btn-primary">Full docs ↗</a>
+        <a href="https://github.com/vertexnova" target="_blank" class="btn btn-ghost">GitHub ↗</a>
+      </div>
+    </PageHeader>
   </div>
 </section>
 
@@ -128,7 +129,7 @@ const platforms = ['macOS', 'iOS', 'visionOS', 'Linux', 'Windows', 'Web'];
 </BaseLayout>
 
 <style>
-.hero-desc { color: var(--muted); font-size: 1.05rem; }
+.hero-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
 .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
 .backend-list { display: flex; flex-direction: column; gap: 0.75rem; }
 .backend-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); }

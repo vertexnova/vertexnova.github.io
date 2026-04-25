@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
 
 const posts = [
   {
@@ -29,12 +30,11 @@ const posts = [
 
 <section class="section">
   <div class="container">
-    <span class="tag orange">Devlog</span>
-    <h1 style="margin-top:1rem">Blog & experiments</h1>
-    <p class="hero-desc" style="max-width:600px;margin-top:0.75rem">
-      Weekly notes on rendering experiments, DGX Spark findings, 3DGS progress,
-      and the journey toward NVIDIA.
-    </p>
+    <PageHeader
+      eyebrow="Devlog"
+      title="Blog & experiments"
+      description="Weekly notes on rendering experiments, DGX Spark findings, 3DGS progress, and the journey toward NVIDIA."
+    />
 
     <div class="posts-list" style="margin-top:3rem">
       {posts.map(p => (
@@ -57,7 +57,6 @@ const posts = [
 </BaseLayout>
 
 <style>
-.hero-desc { color: var(--muted); font-size: 1.05rem; }
 .posts-list { display: flex; flex-direction: column; gap: 1rem; }
 .post-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
 .post-date { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
