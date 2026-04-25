@@ -6,32 +6,42 @@ import { getCollection } from 'astro:content';
 const notes = await getCollection('research');
 const active = notes.filter(n => n.data.status === 'active');
 const drafts = notes.filter(n => n.data.status === 'draft');
-const sorted = [...active, ...drafts];
 ---
 <BaseLayout title="Research" description="Research notes on 3DGS, neural rendering, Vulkan ray tracing, and real-time graphics.">
 
 <section class="section">
   <div class="container">
     <PageHeader
-      eyebrow="Research notes"
-      title="3DGS · Neural rendering · Vulkan"
-      description="Exploratory notes on 3D Gaussian Splatting, neural rendering techniques, and Vulkan ray tracing. Rougher than blog posts — thinking out loud."
+      eyebrow="Research"
+      title="Neural Rendering and Real-Time Graphics"
+      description="Focused notes on 3D Gaussian Splatting, GPU rendering workflows, and implementation constraints on DGX Spark."
     />
 
+    <h2 class="section-label">Published Notes</h2>
     <div class="notes-list">
-      {sorted.map(n => (
-        <a href={`/research/${n.id}`} class={`note-card card ${n.data.status === 'draft' ? 'draft' : ''}`}>
+      {active.map(n => (
+        <a href={`/research/${n.id}`} class="note-card card">
           <div class="note-meta">
             <span class="note-date">{n.data.date}</span>
-            {n.data.status === 'active' && <span class="tag orange" style="font-size:0.68rem">active</span>}
-            {n.data.status === 'draft' && <span class="tag" style="font-size:0.68rem">coming soon</span>}
+            <span class="tag orange" style="font-size:0.68rem">published</span>
           </div>
           <h3 class="note-title">{n.data.title}</h3>
           <p class="note-desc">{n.data.description}</p>
-          <div class="note-tags">
-            {n.data.tags.map(t => <span class="tag">{t}</span>)}
-          </div>
         </a>
+      ))}
+    </div>
+
+    <h2 class="section-label">Planned Topics</h2>
+    <div class="notes-list">
+      {drafts.map(n => (
+        <article class="note-card card draft">
+          <div class="note-meta">
+            <span class="note-date">{n.data.date}</span>
+            <span class="tag" style="font-size:0.68rem">planned</span>
+          </div>
+          <h3 class="note-title">{n.data.title}</h3>
+          <p class="note-desc">{n.data.description}</p>
+        </article>
       ))}
     </div>
   </div>
@@ -40,12 +50,22 @@ const sorted = [...active, ...drafts];
 </BaseLayout>
 
 <style>
-.notes-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 3rem; }
+.section-label {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--orange-light);
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid var(--border);
+}
+.notes-list { display: flex; flex-direction: column; gap: 1rem; }
 .note-card { display: block; text-decoration: none; }
-.note-card.draft { opacity: 0.55; pointer-events: none; }
+.note-card.draft { opacity: 0.72; }
 .note-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
 .note-date { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
 .note-title { color: var(--text); margin-bottom: 0.5rem; font-size: 1.1rem; }
-.note-desc { font-size: 0.9rem; margin-bottom: 1rem; }
-.note-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.note-desc { font-size: 0.92rem; margin: 0; line-height: 1.7; color: var(--muted); }
 </style>
