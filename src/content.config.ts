@@ -24,15 +24,4 @@ const research = defineCollection({
   }),
 });
 
-const setup = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/setup' }),
-  schema: z.object({
-    title: z.string(),
-    date: z.string(),
-    description: z.string(),
-    tags: z.array(z.string()).default([]),
-    status: z.enum(['complete', 'draft']).default('draft'),
-  }),
-});
-
-export const collections = { blog, research, setup };
+export const collections = { blog, research };
