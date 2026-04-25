@@ -1,17 +1,18 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="DGX Spark containers" description="vertexnova/gsplat-spark and vertexnova/aiml-spark container setup on NVIDIA DGX Spark GB10.">
+<BaseLayout title="DGX Containers" description="DGX Spark (GB10): VertexNova gsplat-spark and aiml-spark container images, prerequisites, and verification.">
 
-<section class="section">
+<section class="section dgx-containers-page">
   <div class="container">
 
     <div class="page-hero">
-      <span class="tag orange">Setup guide · Apr 2026</span>
-      <h1>DGX Spark — container setup</h1>
+      <span class="tag orange">DGX Containers · Apr 2026</span>
+      <h1>DGX Containers</h1>
+      <p class="page-subtitle">NVIDIA DGX Spark · GB10 Grace Blackwell</p>
       <p class="lead">
-        Building the VertexNova AI/ML container stack on the NVIDIA DGX Spark GB10 Grace Blackwell.
-        Two containers: one for 3D Gaussian Splatting, one for general AI/ML work.
+        Build and run the VertexNova container pair on this machine: <strong>gsplat-spark</strong> for 3D Gaussian splatting
+        and <strong>aiml-spark</strong> for general AI/ML. Prerequisites first, then each image tab, then verify and summary.
       </p>
       <div class="spec-row">
         <span class="spec-pill">DGX OS 7.4.0</span>
@@ -542,8 +543,16 @@ docker images | grep vertexnova</code></pre>
 
 <style>
 .page-hero { margin-bottom: 2.5rem; }
-.page-hero h1 { margin-top: 0.75rem; margin-bottom: 0.75rem; }
+.page-hero h1 { margin-top: 0.75rem; margin-bottom: 0.35rem; }
+.page-subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--orange-light);
+  letter-spacing: 0.02em;
+  margin-bottom: 0.75rem;
+}
 .lead { max-width: 640px; font-size: 1.05rem; margin-bottom: 1rem; }
+.lead strong { color: var(--text); font-weight: 600; }
 .spec-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
 .spec-pill {
   font-family: var(--font-mono); font-size: 0.72rem;
@@ -551,17 +560,6 @@ docker images | grep vertexnova</code></pre>
   border: 1px solid var(--border); color: var(--muted);
   background: var(--panel);
 }
-.tab-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 1.5rem; }
-.tab {
-  font-size: 0.8rem; padding: 6px 16px; border-radius: 100px;
-  border: 1px solid var(--border); cursor: pointer;
-  color: var(--muted); background: var(--panel);
-  transition: all 0.15s; font-family: var(--font-sans);
-}
-.tab:hover { color: var(--text); border-color: var(--orange-dark); }
-.tab.active { background: var(--orange); color: #fff; border-color: var(--orange); }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
 .tab-desc { color: var(--muted); font-size: 1rem; margin-bottom: 1.5rem; }
 h2 { font-size: 1.4rem; margin-bottom: 0.5rem; }
 p { color: var(--muted); font-size: 0.95rem; }
@@ -639,14 +637,53 @@ pre code { background: none; border: none; padding: 0; color: var(--text); }
 }
 </style>
 
+<style is:global>
+/* Tab panels use JS toggled .active — keep rules global under this page root so display toggles always apply */
+.dgx-containers-page .tab-bar {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 0 0 1.5rem;
+}
+.dgx-containers-page .tab {
+  font-size: 0.8rem;
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  color: var(--muted);
+  background: var(--panel);
+  transition: all 0.15s;
+  font-family: var(--font-sans);
+}
+.dgx-containers-page .tab:hover {
+  color: var(--text);
+  border-color: var(--orange-dark);
+}
+.dgx-containers-page .tab.active {
+  background: var(--orange);
+  color: #fff;
+  border-color: var(--orange);
+}
+.dgx-containers-page .tab-content {
+  display: none;
+}
+.dgx-containers-page .tab-content.active {
+  display: block;
+}
+</style>
+
 <script>
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    const target = (tab as HTMLElement).dataset.tab;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    tab.classList.add('active');
-    if (target) document.getElementById(target)?.classList.add('active');
+const root = document.querySelector('.dgx-containers-page');
+if (root) {
+  root.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = (tab as HTMLElement).dataset.tab;
+      root.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      root.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      if (target) document.getElementById(target)?.classList.add('active');
+    });
   });
-});
+}
 </script>
