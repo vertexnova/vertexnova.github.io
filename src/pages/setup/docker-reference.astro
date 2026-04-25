@@ -397,7 +397,8 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-document.querySelectorAll('pre').forEach(pre => {
+document.querySelectorAll('pre').forEach(el => {
+  const pre = el as HTMLElement;
   const wrapper = document.createElement('div');
   wrapper.className = 'code-block';
   pre.parentNode?.insertBefore(wrapper, pre);
@@ -409,7 +410,8 @@ document.querySelectorAll('pre').forEach(pre => {
   wrapper.appendChild(btn);
 
   btn.addEventListener('click', async () => {
-    const text = pre.querySelector('code')?.innerText ?? pre.innerText;
+    const code = pre.querySelector('code') as HTMLElement | null;
+    const text = code?.innerText ?? pre.innerText;
     await navigator.clipboard.writeText(text);
     btn.textContent = 'copied!';
     btn.classList.add('copied');
