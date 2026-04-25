@@ -378,11 +378,11 @@ pre code { background: none; border: none; padding: 0; color: var(--text); }
 <script>
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
-    const target = tab.dataset.tab;
+    const target = (tab as HTMLElement).dataset.tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     tab.classList.add('active');
-    document.getElementById(target).classList.add('active');
+    if (target) document.getElementById(target)?.classList.add('active');
   });
 });
 </script>

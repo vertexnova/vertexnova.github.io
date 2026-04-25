@@ -1,44 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/PageHeader.astro';
+import { getCollection } from 'astro:content';
 
-const notes = [
-  {
-    title: '3D Gaussian Splatting — first principles',
-    date: 'Apr 2026',
-    tags: ['3DGS', 'neural rendering', 'real-time'],
-    desc: 'How 3DGS represents scenes as anisotropic Gaussian ellipsoids, tile-based rasterization, and why it matters for real-time surgical visualization.',
-    status: 'active',
-  },
-  {
-    title: 'gsplat on DGX Spark — ARM64 build notes',
-    date: 'Apr 2026',
-    tags: ['gsplat', 'CUDA 13', 'ARM64', 'GB10'],
-    desc: 'Building gsplat 1.5.3 from source on the GB10 Blackwell. SM 12.0 arch, --no-build-isolation flag, PyTorch 2.7 compatibility.',
-    status: 'active',
-  },
-  {
-    title: '3DGS vs NeRF — a rendering engineer\'s comparison',
-    date: 'Coming soon',
-    tags: ['3DGS', 'NeRF', 'comparison'],
-    desc: 'Speed, quality, editability, and storage tradeoffs. When to use each from a real-time rendering background.',
-    status: 'draft',
-  },
-  {
-    title: 'Vulkan ray tracing — first steps',
-    date: 'Coming soon',
-    tags: ['Vulkan', 'RTX', 'ray tracing'],
-    desc: 'Integrating VK_KHR_ray_tracing_pipeline into VertexNova. First pass: simple path tracer for the NVIDIA hiring signal.',
-    status: 'draft',
-  },
-  {
-    title: '4D Gaussian Splatting for surgical scenes',
-    date: 'Coming soon',
-    tags: ['4DGS', 'medical', 'robotics'],
-    desc: 'Applying 4DGS to dynamic surgical anatomy — moving instruments, tissue deformation, real-time intraoperative visualization.',
-    status: 'draft',
-  },
-];
+const notes = await getCollection('research');
+const active = notes.filter(n => n.data.status === 'active');
+const drafts = notes.filter(n => n.data.status === 'draft');
+const sorted = [...active, ...drafts];
 ---
 <BaseLayout title="Research" description="Research notes on 3DGS, neural rendering, Vulkan ray tracing, and real-time graphics.">
 
@@ -50,20 +18,20 @@ const notes = [
       description="Exploratory notes on 3D Gaussian Splatting, neural rendering techniques, and Vulkan ray tracing. Rougher than blog posts — thinking out loud."
     />
 
-    <div class="notes-list" style="margin-top:3rem">
-      {notes.map(n => (
-        <div class={`note-card card ${n.status === 'draft' ? 'draft' : ''}`}>
+    <div class="notes-list">
+      {sorted.map(n => (
+        <a href={`/research/${n.id}`} class={`note-card card ${n.data.status === 'draft' ? 'draft' : ''}`}>
           <div class="note-meta">
-            <span class="note-date">{n.date}</span>
-            {n.status === 'active' && <span class="tag orange" style="font-size:0.68rem">active</span>}
-            {n.status === 'draft' && <span class="tag" style="font-size:0.68rem">coming soon</span>}
+            <span class="note-date">{n.data.date}</span>
+            {n.data.status === 'active' && <span class="tag orange" style="font-size:0.68rem">active</span>}
+            {n.data.status === 'draft' && <span class="tag" style="font-size:0.68rem">coming soon</span>}
           </div>
-          <h3 class="note-title">{n.title}</h3>
-          <p class="note-desc">{n.desc}</p>
+          <h3 class="note-title">{n.data.title}</h3>
+          <p class="note-desc">{n.data.description}</p>
           <div class="note-tags">
-            {n.tags.map(t => <span class="tag">{t}</span>)}
+            {n.data.tags.map(t => <span class="tag">{t}</span>)}
           </div>
-        </div>
+        </a>
       ))}
     </div>
   </div>
@@ -72,8 +40,9 @@ const notes = [
 </BaseLayout>
 
 <style>
-.notes-list { display: flex; flex-direction: column; gap: 1rem; }
-.note-card.draft { opacity: 0.55; }
+.notes-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 3rem; }
+.note-card { display: block; text-decoration: none; }
+.note-card.draft { opacity: 0.55; pointer-events: none; }
 .note-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
 .note-date { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
 .note-title { color: var(--text); margin-bottom: 0.5rem; font-size: 1.1rem; }
