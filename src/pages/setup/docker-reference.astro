@@ -1,16 +1,20 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/setup-tabbed-pages.css';
 ---
-<BaseLayout title="Docker on Spark" description="Docker concepts and commands for DGX Spark — inspect, run, images, cleanup, and DGX-specific examples.">
+<BaseLayout title="Docker on Spark" description="Docker concepts and commands for DGX Spark — inspect, run, images, cleanup, and machine-specific examples.">
 
-<section class="section">
+<section class="section setup-tabbed-page">
   <div class="container">
-    <span class="tag orange">Reference</span>
-    <h1 style="margin-top:1rem">Docker on Spark</h1>
-    <p class="lead">
-      Concepts, command patterns, and DGX Spark–specific examples in one place.
-      Use it as a lab reference alongside the setup guides.
-    </p>
+    <div class="setup-page-hero">
+      <span class="tag orange">Setup · Reference</span>
+      <h1>Docker on Spark</h1>
+      <p class="setup-subtitle">Commands and patterns · DGX Spark</p>
+      <p class="lead">
+        Use this page next to <strong>DGX Containers</strong> when you need exact flags, inspect commands, or cleanup order.
+        Same tab pattern as the container guide: pick a section, copy blocks with the button in the corner.
+      </p>
+    </div>
 
     <div class="tab-bar">
       <button class="tab active" data-tab="intro">What is Docker</button>
@@ -20,7 +24,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <button class="tab" data-tab="modify">Modify & save</button>
       <button class="tab" data-tab="images">Images</button>
       <button class="tab" data-tab="cleanup">Cleanup</button>
-      <button class="tab" data-tab="dgx">Your containers</button>
+      <button class="tab" data-tab="dgx">On this Spark</button>
     </div>
 
     <div id="intro" class="tab-content active">
@@ -28,17 +32,17 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
       <p>Docker packages software and all its dependencies into a <strong>container</strong> — a lightweight isolated environment that runs the same way on any machine.</p>
       <p>On the DGX Spark this matters especially because the machine runs <strong>ARM64 + CUDA 13</strong>. Most ML packages don't have pre-built wheels for this combo. NVIDIA ships optimised containers that work out of the box.</p>
 
-      <div class="note warn">⚠ Key DGX Spark rule: never install ML packages directly on the host. Always use containers. Keep DGX OS clean.</div>
+      <div class="note warn">Host rule: do not install ML stacks on the DGX OS. Use containers so drivers and Docker stay the only moving parts on the host.</div>
 
-      <h3>The analogy</h3>
+      <h3>Core terms</h3>
       <div class="concept-grid">
         <div class="concept-card">
-          <span class="concept-title">Image = recipe</span>
-          <p>A read-only template. Like a class in C++. Defines what's installed. You can't change it directly.</p>
+          <span class="concept-title">Image</span>
+          <p>Read-only template: filesystem layers and metadata. Created by pull or build; you do not edit it in place.</p>
         </div>
         <div class="concept-card">
-          <span class="concept-title">Container = running instance</span>
-          <p>A live copy of the image. Like an object from a class. You work inside here.</p>
+          <span class="concept-title">Container</span>
+          <p>Runnable instance of an image: writable layer on top. Your shell and installs live here until you commit or discard.</p>
         </div>
         <div class="concept-card">
           <span class="concept-title">Registry = library</span>
@@ -90,7 +94,7 @@ docker run -it -v ~/workspace:/workspace IMAGE bash
 echo "hello" > /workspace/test.txt
 exit   # still at ~/workspace/test.txt on host</code></pre>
 
-      <div class="note info">ℹ Always mount ~/workspace. That is why every run command uses -v ~/workspace:/workspace.</div>
+      <div class="note info">Mount <code>~/workspace</code> into <code>/workspace</code> on every long-lived dev container so repos and artifacts survive container removal.</div>
 
       <h3>Ports — accessing services from host</h3>
       <pre><code># -p HOST_PORT:CONTAINER_PORT
@@ -144,7 +148,7 @@ docker run -p 8888:8888 IMAGE jupyter lab
   --ulimit stack=67108864 \    # 64MB stack
   -v ~/workspace:/workspace \  # mount workspace
   -p 7007:7007 \               # nerfstudio viewer port
-  ajeet/gsplat-spark:v1 bash</code></pre>
+  vertexnova/gsplat-spark:v1 bash</code></pre>
 
       <h3>Common run flags</h3>
       <div class="cmd-table">
@@ -176,7 +180,7 @@ docker start -ai gsplat-dev</code></pre>
 docker run --gpus all -it --name gsplat-dev \
   --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
   -v ~/workspace:/workspace \
-  ajeet/gsplat-spark:v1 bash
+  vertexnova/gsplat-spark:v1 bash
 
 # 2. Inside container — install something new
 pip install open3d trimesh plyfile
@@ -185,11 +189,11 @@ pip install open3d trimesh plyfile
 exit
 
 # 4. Commit — saves changes as new image
-docker commit gsplat-dev ajeet/gsplat-spark:v2
+docker commit gsplat-dev vertexnova/gsplat-spark:v2
 
 # 5. Next session — start from v2
 docker run --gpus all -it --name gsplat-dev \
-  ajeet/gsplat-spark:v2 bash</code></pre>
+  vertexnova/gsplat-spark:v2 bash</code></pre>
 
       <h3>Exec into a running container</h3>
       <div class="cmd-table">
@@ -205,7 +209,7 @@ docker run --gpus all -it --name gsplat-dev \
         <div class="cmd-row"><code>docker rename OLD NEW</code><span>Rename a container without recreating</span></div>
       </div>
 
-      <div class="note info">ℹ Only files in /workspace persist automatically. Everything else needs docker commit to survive.</div>
+      <div class="note info">Only bind-mounted paths (for example <code>/workspace</code>) persist without a commit. Everything else in the container layer is ephemeral.</div>
     </div>
 
     <div id="images" class="tab-content">
@@ -214,18 +218,18 @@ docker run --gpus all -it --name gsplat-dev \
       <h3>List & inspect</h3>
       <div class="cmd-table">
         <div class="cmd-row"><code>docker images</code><span>All local images — name, tag, size, age</span></div>
-        <div class="cmd-row"><code>docker images | grep ajeet</code><span>Your saved images only</span></div>
+        <div class="cmd-row"><code>docker images | grep vertexnova</code><span>Your saved images only</span></div>
         <div class="cmd-row"><code>docker history IMAGE</code><span>Show layers that make up an image</span></div>
         <div class="cmd-row"><code>docker image inspect IMAGE</code><span>Full metadata JSON</span></div>
       </div>
 
       <h3>Tag & version</h3>
-      <pre><code># Convention: ajeet/PURPOSE-spark:vN
-docker tag ajeet/gsplat-spark:v1 ajeet/gsplat-spark:stable
+      <pre><code># Convention: namespace/PURPOSE-spark:vN
+docker tag vertexnova/gsplat-spark:v1 vertexnova/gsplat-spark:stable
 
-# Your images
-ajeet/gsplat-spark:v1     # gsplat 1.5.3, PyTorch 2.7
-ajeet/aiml-spark:v1       # next to build</code></pre>
+# Example local images
+vertexnova/gsplat-spark:v1   # 3DGS workspace
+vertexnova/aiml-spark:v1     # general ML workspace</code></pre>
 
       <h3>Remove images</h3>
       <div class="cmd-table">
@@ -233,7 +237,7 @@ ajeet/aiml-spark:v1       # next to build</code></pre>
         <div class="cmd-row"><code>docker image prune</code><span>Remove dangling untagged images only — safe</span></div>
       </div>
 
-      <div class="note warn">⚠ Never run docker rmi on ajeet/* images — those are your saved work.</div>
+      <div class="note warn">Avoid <code>docker rmi</code> on tagged images you still need; prefer <code>docker image prune</code> for dangling layers only.</div>
     </div>
 
     <div id="cleanup" class="tab-content">
@@ -262,19 +266,20 @@ docker container prune
 docker image prune
 
 # Step 4: verify your saved images are intact
-docker images | grep ajeet</code></pre>
+docker images | grep vertexnova</code></pre>
 
-      <div class="note warn">⚠ docker system prune -a removes ALL unused images including ajeet/*. Never run this without checking first.</div>
-      <div class="note ok">Safe order: container prune → image prune → verify ajeet/* images still there.</div>
+      <div class="note warn"><code>docker system prune -a</code> removes every unused image, including tagged ones. Only use it after <code>docker images</code> review.</div>
+      <div class="note ok">Safe sequence: <code>docker system df</code> → <code>docker container prune</code> → <code>docker image prune</code> → re-list images.</div>
     </div>
 
     <div id="dgx" class="tab-content">
-      <h2>Your DGX Spark containers</h2>
+      <h2>On this Spark</h2>
+      <p class="tab-desc">Image names and run lines aligned with the <strong>DGX Containers</strong> guide. Adjust hostnames and ports to your network.</p>
 
       <h3>Saved images</h3>
-      <pre><code>ajeet/gsplat-spark:v1      # gsplat 1.5.3 · PyTorch 2.7 · CUDA 13 · ARM64
-ajeet/aiml-spark:v1        # to build next — PyTorch + TF + OpenCV
-ajeet/vertexnova-spark:v1  # planned — C++ rendering tools</code></pre>
+      <pre><code>vertexnova/gsplat-spark:v1      # gsplat 1.5.3 · PyTorch 2.7 · CUDA 13 · ARM64
+vertexnova/aiml-spark:v1        # CV + notebooks + 3D helpers
+vertexnova/vertexnova-spark:v1  # planned — engine toolchain</code></pre>
 
       <h3>Launch gsplat container</h3>
       <pre><code>docker run --gpus all -it \
@@ -284,7 +289,7 @@ ajeet/vertexnova-spark:v1  # planned — C++ rendering tools</code></pre>
   --ulimit stack=67108864 \
   -v ~/workspace:/workspace \
   -p 7007:7007 \
-  ajeet/gsplat-spark:v1 bash</code></pre>
+  vertexnova/gsplat-spark:v1 bash</code></pre>
 
       <h3>Re-enter if already created</h3>
       <pre><code>docker ps -a | grep gsplat-dev
@@ -305,120 +310,55 @@ docker run --rm --gpus all \
   nvcr.io/nvidia/cuda:13.0.0-base-ubuntu24.04 nvidia-smi
 
 # 3. Your images intact
-docker images | grep ajeet
+docker images | grep vertexnova
 
-# 4. NemoClaw still running
-docker ps | grep openshell</code></pre>
+# 4. Optional — services you expect to stay up
+docker ps | grep YOUR_SERVICE</code></pre>
 
-      <div class="note ok">Run these 4 checks after every reboot. If all pass, you are ready to work.</div>
+      <div class="note ok">After reboot: driver, GPU in Docker, your images listed, then any always-on services you rely on.</div>
     </div>
 
   </div>
 </section>
 
 <script>
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    const target = (tab as HTMLElement).dataset.tab;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    tab.classList.add('active');
-    if (target) document.getElementById(target)?.classList.add('active');
+const root = document.querySelector('.setup-tabbed-page');
+if (root) {
+  root.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = (tab as HTMLElement).dataset.tab;
+      root.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      root.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      if (target) document.getElementById(target)?.classList.add('active');
+    });
   });
-});
 
-document.querySelectorAll('pre').forEach(el => {
-  const pre = el as HTMLElement;
-  const wrapper = document.createElement('div');
-  wrapper.className = 'code-block';
-  pre.parentNode?.insertBefore(wrapper, pre);
-  wrapper.appendChild(pre);
+  root.querySelectorAll('pre').forEach(el => {
+    const pre = el as HTMLElement;
+    if (pre.closest('.code-block')) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    pre.parentNode?.insertBefore(wrapper, pre);
+    wrapper.appendChild(pre);
 
-  const btn = document.createElement('button');
-  btn.className = 'copy-btn';
-  btn.textContent = 'copy';
-  wrapper.appendChild(btn);
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    wrapper.appendChild(btn);
 
-  btn.addEventListener('click', async () => {
-    const code = pre.querySelector('code') as HTMLElement | null;
-    const text = code?.innerText ?? pre.innerText;
-    await navigator.clipboard.writeText(text);
-    btn.textContent = 'copied!';
-    btn.classList.add('copied');
-    setTimeout(() => {
-      btn.textContent = 'copy';
-      btn.classList.remove('copied');
-    }, 2000);
+    btn.addEventListener('click', async () => {
+      const code = pre.querySelector('code') as HTMLElement | null;
+      const text = code?.innerText ?? pre.innerText;
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
   });
-});
+}
 </script>
 </BaseLayout>
-
-<style>
-.lead { max-width: 600px; margin-top: 0.75rem; font-size: 1.05rem; }
-.tab-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 2rem 0 1.5rem; }
-.tab {
-  font-size: 0.8rem; padding: 6px 16px; border-radius: 100px;
-  border: 1px solid var(--border); cursor: pointer;
-  color: var(--muted); background: var(--panel);
-  transition: all 0.15s; font-family: var(--font-sans);
-}
-.tab:hover { color: var(--text); border-color: var(--orange-dark); }
-.tab.active { background: var(--orange); color: #fff; border-color: var(--orange); }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
-h2 { font-size: 1.4rem; margin-bottom: 1rem; }
-h3 { font-size: 1rem; font-weight: 500; margin: 1.5rem 0 0.75rem; color: var(--text); }
-.lead, p { color: var(--muted); }
-.code-block { position: relative; margin-bottom: 1rem; }
-.code-block pre { margin-bottom: 0; padding-right: 4rem; }
-.copy-btn {
-  position: absolute; top: 0.5rem; right: 0.5rem;
-  background: var(--panel-mid); border: 1px solid var(--border);
-  border-radius: 6px; color: var(--muted);
-  font-family: var(--font-mono); font-size: 0.68rem;
-  padding: 3px 9px; cursor: pointer; transition: all 0.15s; line-height: 1.6;
-}
-.copy-btn:hover { border-color: var(--orange-dark); color: var(--orange-light); }
-.copy-btn.copied { color: #7abf82; border-color: #1a4a20; }
-pre {
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: 8px; padding: 1rem 1.25rem;
-  font-family: var(--font-mono); font-size: 0.82rem;
-  line-height: 1.8; overflow-x: auto; margin-bottom: 1rem;
-  color: var(--text);
-}
-code {
-  font-family: var(--font-mono); font-size: 0.82rem;
-  background: var(--panel-mid); color: var(--orange-light);
-  padding: 2px 7px; border-radius: 4px;
-  border: 1px solid var(--border);
-}
-pre code { background: none; border: none; padding: 0; color: var(--text); }
-.cmd-table { margin-bottom: 1rem; }
-.cmd-row {
-  display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.2fr);
-  gap: 1rem; padding: 8px 0;
-  border-bottom: 1px solid var(--border);
-  align-items: start; font-size: 0.875rem;
-}
-.cmd-row:last-child { border-bottom: none; }
-.cmd-row span { color: var(--muted); padding-top: 3px; }
-.concept-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 1rem 0; }
-.concept-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
-.concept-title { display: block; font-weight: 500; color: var(--orange-light); font-size: 0.9rem; margin-bottom: 0.4rem; }
-.concept-card p { font-size: 0.85rem; margin: 0; }
-.lifecycle { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 1rem 0; }
-.lc-step { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.lc-box { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 5px 14px; font-size: 0.85rem; font-weight: 500; }
-.lc-label { font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); }
-.lc-arrow { color: var(--orange); font-size: 1.1rem; }
-.note { border-radius: 8px; padding: 8px 14px; font-size: 0.82rem; font-family: var(--font-mono); margin: 0.75rem 0; }
-.warn { background: var(--orange-tint); border: 1px solid var(--orange-dark); color: var(--orange-light); }
-.info { background: #0d1f35; border: 1px solid #1a4a7a; color: #7ab8f0; }
-.ok { background: #0d2010; border: 1px solid #1a4a20; color: #7abf82; }
-@media (max-width: 768px) {
-  .concept-grid { grid-template-columns: 1fr; }
-  .cmd-row { grid-template-columns: 1fr; }
-}
-</style>

@@ -1,34 +1,36 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import '../../styles/setup-tabbed-pages.css';
 ---
-<BaseLayout title="DGX Containers" description="DGX Spark (GB10): VertexNova gsplat-spark and aiml-spark container images, prerequisites, and verification.">
+<BaseLayout title="DGX Containers" description="DGX Spark (GB10): VertexNova gsplat-spark and aiml-spark images — prerequisites, build steps, verification.">
 
-<section class="section dgx-containers-page">
+<section class="section setup-tabbed-page">
   <div class="container">
 
-    <div class="page-hero">
-      <span class="tag orange">DGX Containers · Apr 2026</span>
+    <div class="setup-page-hero">
+      <span class="tag orange">Setup · Primary guide</span>
       <h1>DGX Containers</h1>
-      <p class="page-subtitle">NVIDIA DGX Spark · GB10 Grace Blackwell</p>
+      <p class="setup-subtitle">NVIDIA DGX Spark · GB10 · ARM64 · CUDA 13</p>
       <p class="lead">
-        Build and run the VertexNova container pair on this machine: <strong>gsplat-spark</strong> for 3D Gaussian splatting
-        and <strong>aiml-spark</strong> for general AI/ML. Prerequisites first, then each image tab, then verify and summary.
+        Build <strong>vertexnova/gsplat-spark</strong> and <strong>vertexnova/aiml-spark</strong> from the same PyTorch base image.
+        Work through the tabs in order: prerequisites once, then each image, verify day-to-day use, summary and limits last.
+        For raw Docker commands, open <strong>Docker on Spark</strong> in another tab (same tab + copy pattern).
       </p>
-      <div class="spec-row">
-        <span class="spec-pill">DGX OS 7.4.0</span>
-        <span class="spec-pill">CUDA 13.0.2</span>
-        <span class="spec-pill">Driver 580.142</span>
-        <span class="spec-pill">ARM64 aarch64</span>
-        <span class="spec-pill">GB10 · SM 12.0</span>
-        <span class="spec-pill">128GB unified memory</span>
+      <div class="setup-spec-row">
+        <span class="setup-spec-pill">DGX OS 7.4.0</span>
+        <span class="setup-spec-pill">CUDA 13.0.2</span>
+        <span class="setup-spec-pill">Driver 580.142</span>
+        <span class="setup-spec-pill">ARM64</span>
+        <span class="setup-spec-pill">GB10 · SM 12.0</span>
+        <span class="setup-spec-pill">128 GB unified memory</span>
       </div>
     </div>
 
     <div class="tab-bar">
       <button class="tab active" data-tab="prereqs">Prerequisites</button>
-      <button class="tab" data-tab="gsplat">vertexnova/gsplat-spark</button>
-      <button class="tab" data-tab="aiml">vertexnova/aiml-spark</button>
-      <button class="tab" data-tab="verify">Verify & use</button>
+      <button class="tab" data-tab="gsplat">gsplat-spark</button>
+      <button class="tab" data-tab="aiml">aiml-spark</button>
+      <button class="tab" data-tab="verify">Verify</button>
       <button class="tab" data-tab="summary">Summary</button>
     </div>
 
@@ -100,7 +102,7 @@ swapon --show    # should print nothing</code></pre>
         <p>The GB10 is compute capability SM 12.0. PyTorch 2.7 in the NVIDIA container does not recognise <code>12.1</code> — use <code>12.0</code> when building any CUDA extension from source.</p>
         <pre><code>export TORCH_CUDA_ARCH_LIST="12.0"
 # Set this before: pip install gsplat, any CUDA extension build</code></pre>
-        <div class="note warn">⚠ Using 12.1 raises ValueError: Unknown CUDA arch. Use 12.0.</div>
+        <div class="note warn">Using 12.1 raises an unknown-arch error in this PyTorch build. Use 12.0 only.</div>
       </div>
     </div>
 
@@ -167,7 +169,7 @@ pip install git+https://github.com/nerfstudio-project/gsplat.git \
   --no-build-isolation
 
 # Compilation takes 5-10 minutes — normal</code></pre>
-        <div class="note warn">⚠ Do NOT use --index-url https://download.pytorch.org/whl/cu130 — it will try to replace the NVIDIA PyTorch build and fail.</div>
+        <div class="note warn">Do not point pip at the public PyTorch cu130 index here; it conflicts with the NVIDIA container build.</div>
       </div>
 
       <div class="step">
@@ -193,75 +195,42 @@ docker images | grep vertexnova</code></pre>
 
     <div id="aiml" class="tab-content">
       <h2>vertexnova/aiml-spark:v1</h2>
-      <p class="tab-desc">General AI/ML workspace — computer vision, data science, 3D geometry, JupyterLab.</p>
+      <p class="tab-desc">CV, tabular work, light 3D mesh I/O, and JupyterLab on top of the same NVIDIA PyTorch base. NumPy, pandas, matplotlib, and scikit-learn already ship in the base image.</p>
 
       <div class="pkg-grid">
         <div class="pkg-card">
           <span class="pkg-name">PyTorch</span>
           <span class="pkg-ver">2.7.0a0</span>
-          <span class="pkg-note">pre-installed</span>
+          <span class="pkg-note">NVIDIA base image</span>
         </div>
         <div class="pkg-card">
           <span class="pkg-name">OpenCV</span>
           <span class="pkg-ver">4.10.0</span>
-          <span class="pkg-note">headless build</span>
-        </div>
-        <div class="pkg-card">
-          <span class="pkg-name">NumPy</span>
-          <span class="pkg-ver">1.26.4</span>
-          <span class="pkg-note">pre-installed</span>
-        </div>
-        <div class="pkg-card">
-          <span class="pkg-name">pandas</span>
-          <span class="pkg-ver">2.2.3</span>
-          <span class="pkg-note">pre-installed</span>
-        </div>
-        <div class="pkg-card">
-          <span class="pkg-name">scikit-learn</span>
-          <span class="pkg-ver">1.6.1</span>
-          <span class="pkg-note">pre-installed</span>
-        </div>
-        <div class="pkg-card">
-          <span class="pkg-name">scikit-image</span>
-          <span class="pkg-ver">0.26.0</span>
-          <span class="pkg-note">installed</span>
-        </div>
-        <div class="pkg-card">
-          <span class="pkg-name">matplotlib</span>
-          <span class="pkg-ver">3.10.1</span>
-          <span class="pkg-note">pre-installed</span>
-        </div>
-        <div class="pkg-card">
-          <span class="pkg-name">seaborn</span>
-          <span class="pkg-ver">0.13.2</span>
-          <span class="pkg-note">installed</span>
-        </div>
-        <div class="pkg-card">
-          <span class="pkg-name">trimesh</span>
-          <span class="pkg-ver">4.12.1</span>
-          <span class="pkg-note">3D mesh processing</span>
-        </div>
-        <div class="pkg-card">
-          <span class="pkg-name">plyfile</span>
-          <span class="pkg-ver">1.1.3</span>
-          <span class="pkg-note">PLY / splat files</span>
+          <span class="pkg-note">headless · pip stage 1</span>
         </div>
         <div class="pkg-card">
           <span class="pkg-name">JupyterLab</span>
           <span class="pkg-ver">latest</span>
-          <span class="pkg-note">notebook interface</span>
+          <span class="pkg-note">pip stage 4</span>
         </div>
         <div class="pkg-card">
-          <span class="pkg-name">imageio</span>
-          <span class="pkg-ver">2.37.3</span>
-          <span class="pkg-note">image I/O</span>
+          <span class="pkg-name">trimesh · plyfile</span>
+          <span class="pkg-ver">4.x / 1.x</span>
+          <span class="pkg-note">mesh + PLY I/O</span>
+        </div>
+        <div class="pkg-card">
+          <span class="pkg-name">scikit-image · imageio</span>
+          <span class="pkg-ver">0.26 / 2.37</span>
+          <span class="pkg-note">pip stage 1</span>
+        </div>
+        <div class="pkg-card">
+          <span class="pkg-name">seaborn · rich · tqdm</span>
+          <span class="pkg-ver">—</span>
+          <span class="pkg-note">pip stage 2</span>
         </div>
       </div>
 
-      <div class="note warn" style="margin-bottom:1.5rem">
-        ⚠ Not installed: open3d (no ARM64 wheel), tensorflow-cpu (no Python 3.12 ARM64 wheel).
-        TensorFlow can run in a dedicated container using an older Python version.
-      </div>
+      <div class="note warn">Not covered here: Open3D (no stable ARM64 wheel in this flow), TensorFlow on Python 3.12 (use a separate TF-focused image if needed).</div>
 
       <div class="step">
         <div class="step-header">
@@ -354,8 +323,8 @@ docker run --rm --gpus all \
 # 3. Images intact
 docker images | grep vertexnova
 
-# 4. NemoClaw running
-docker ps | grep openshell</code></pre>
+# 4. Optional — containers you expect to stay up
+docker ps | grep YOUR_SERVICE</code></pre>
       </div>
 
       <div class="step">
@@ -541,7 +510,7 @@ docker images | grep vertexnova</code></pre>
 </section>
 
 <script>
-const root = document.querySelector('.dgx-containers-page');
+const root = document.querySelector('.setup-tabbed-page');
 if (root) {
   root.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
@@ -552,46 +521,38 @@ if (root) {
       if (target) document.getElementById(target)?.classList.add('active');
     });
   });
+
+  root.querySelectorAll('pre').forEach(el => {
+    const pre = el as HTMLElement;
+    if (pre.closest('.code-block')) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'code-block';
+    pre.parentNode?.insertBefore(wrapper, pre);
+    wrapper.appendChild(pre);
+
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copy';
+    wrapper.appendChild(btn);
+
+    btn.addEventListener('click', async () => {
+      const code = pre.querySelector('code') as HTMLElement | null;
+      const text = code?.innerText ?? pre.innerText;
+      await navigator.clipboard.writeText(text);
+      btn.textContent = 'copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  });
 }
 </script>
 </BaseLayout>
 
 <style>
-.page-hero { margin-bottom: 2.5rem; }
-.page-hero h1 { margin-top: 0.75rem; margin-bottom: 0.35rem; }
-.page-subtitle {
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--orange-light);
-  letter-spacing: 0.02em;
-  margin-bottom: 0.75rem;
-}
-.lead { max-width: 640px; font-size: 1.05rem; margin-bottom: 1rem; }
-.lead strong { color: var(--text); font-weight: 600; }
-.spec-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
-.spec-pill {
-  font-family: var(--font-mono); font-size: 0.72rem;
-  padding: 3px 10px; border-radius: 100px;
-  border: 1px solid var(--border); color: var(--muted);
-  background: var(--panel);
-}
-.tab-desc { color: var(--muted); font-size: 1rem; margin-bottom: 1.5rem; }
-h2 { font-size: 1.4rem; margin-bottom: 0.5rem; }
-p { color: var(--muted); font-size: 0.95rem; }
-pre {
-  background: var(--panel); border: 1px solid var(--border);
-  border-radius: 8px; padding: 1rem 1.25rem;
-  font-family: var(--font-mono); font-size: 0.82rem;
-  line-height: 1.8; overflow-x: auto; margin: 0.75rem 0;
-  color: var(--text);
-}
-code {
-  font-family: var(--font-mono); font-size: 0.82rem;
-  background: var(--panel-mid); color: var(--orange-light);
-  padding: 2px 7px; border-radius: 4px;
-  border: 1px solid var(--border);
-}
-pre code { background: none; border: none; padding: 0; color: var(--text); }
+/* Page-specific: numbered steps, package cards, summary (shared shell in setup-tabbed-pages.css) */
 .step { margin-bottom: 1.5rem; }
 .step-header {
   display: flex; align-items: center; gap: 0.75rem;
@@ -613,12 +574,6 @@ pre code { background: none; border: none; padding: 0; color: var(--text); }
 .badge.info { color: #7ab8f0; border-color: #1a4a7a; background: #0d1f35; }
 .badge.warn { color: #f0c07a; border-color: #7a5a1a; background: #2a1f0d; }
 .badge.planned { color: var(--muted); border-color: var(--border); background: var(--panel); }
-.note {
-  border-radius: 8px; padding: 8px 14px;
-  font-size: 0.8rem; font-family: var(--font-mono); margin: 0.5rem 0;
-}
-.warn { background: var(--orange-tint); border: 1px solid var(--orange-dark); color: var(--orange-light); }
-.info { background: #0d1f35; border: 1px solid #1a4a7a; color: #7ab8f0; }
 .pkg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.6rem; margin: 1rem 0 1.5rem; }
 .pkg-card { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; }
 .pkg-name { display: block; font-weight: 500; color: var(--text); font-size: 0.9rem; }
@@ -649,41 +604,5 @@ pre code { background: none; border: none; padding: 0; color: var(--text); }
 @media (max-width: 768px) {
   .summary-grid { grid-template-columns: 1fr; }
   .limit-row { grid-template-columns: 1fr; }
-}
-</style>
-
-<style is:global>
-/* Tab panels use JS toggled .active — keep rules global under this page root so display toggles always apply */
-.dgx-containers-page .tab-bar {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin: 0 0 1.5rem;
-}
-.dgx-containers-page .tab {
-  font-size: 0.8rem;
-  padding: 6px 16px;
-  border-radius: 100px;
-  border: 1px solid var(--border);
-  cursor: pointer;
-  color: var(--muted);
-  background: var(--panel);
-  transition: all 0.15s;
-  font-family: var(--font-sans);
-}
-.dgx-containers-page .tab:hover {
-  color: var(--text);
-  border-color: var(--orange-dark);
-}
-.dgx-containers-page .tab.active {
-  background: var(--orange);
-  color: #fff;
-  border-color: var(--orange);
-}
-.dgx-containers-page .tab-content {
-  display: none;
-}
-.dgx-containers-page .tab-content.active {
-  display: block;
 }
 </style>
