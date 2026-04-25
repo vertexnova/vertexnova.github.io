@@ -1,11 +1,177 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
-
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
+<BaseLayout title="Home" description="VertexNova — multi-backend 3D rendering engine and AI dev workspace by Ajeet Yadav.">
 
-<Layout>
-	<Welcome />
-</Layout>
+<section class="hero section">
+  <div class="container">
+    <div class="hero-eyebrow">
+      <span class="tag orange">C++ · Vulkan · Metal · OpenGL</span>
+      <span class="tag">DGX Spark · 3DGS · Neural Rendering</span>
+    </div>
+    <h1 class="hero-title">
+      Real-Time 3D Rendering<br/>
+      <span class="accent">& AI Dev Workspace</span>
+    </h1>
+    <p class="hero-desc">
+      VertexNova is a multi-backend C++20 rendering engine targeting Vulkan, Metal, OpenGL, and OpenGL ES
+      across six platforms. This site documents the engine, AI/ML experiments on the DGX Spark,
+      3D Gaussian Splatting research, and technical devlogs.
+    </p>
+    <div class="hero-actions">
+      <a href="/engine" class="btn btn-primary">Explore the engine →</a>
+      <a href="/setup" class="btn btn-ghost">Setup guides</a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="section-sm">
+  <div class="container">
+    <div class="stats-row">
+      <div class="stat">
+        <span class="stat-num">6</span>
+        <span class="stat-label">Platforms</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <span class="stat-num">4</span>
+        <span class="stat-label">Render backends</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <span class="stat-num">2</span>
+        <span class="stat-label">Patents</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <span class="stat-num">10+</span>
+        <span class="stat-label">Years in robotics</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <span class="stat-num">128GB</span>
+        <span class="stat-label">DGX Spark memory</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-heading">What's here</h2>
+    <p class="section-sub">A living workspace — engine docs, setup guides, and research notes.</p>
+    <div class="cards-grid">
+      <a href="/engine" class="card card-link">
+        <div class="card-icon">◈</div>
+        <h3>VertexNova Engine</h3>
+        <p>Architecture, roadmap, demos, and design decisions behind the multi-backend C++20 renderer.</p>
+        <span class="card-arrow">→</span>
+      </a>
+      <a href="/setup" class="card card-link">
+        <div class="card-icon">⚙</div>
+        <h3>Setup guides</h3>
+        <p>DGX Spark configuration, Docker containers, gsplat install, CUDA arch quirks, and dev environment setup.</p>
+        <span class="card-arrow">→</span>
+      </a>
+      <a href="/research" class="card card-link">
+        <div class="card-icon">◎</div>
+        <h3>Research notes</h3>
+        <p>3D Gaussian Splatting deep dives, NeRF comparisons, Vulkan ray tracing experiments, and neural rendering.</p>
+        <span class="card-arrow">→</span>
+      </a>
+      <a href="/blog" class="card card-link">
+        <div class="card-icon">✦</div>
+        <h3>Blog & devlog</h3>
+        <p>Weekly experiments, rendering discoveries, DGX Spark findings, and technical observations.</p>
+        <span class="card-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="section">
+  <div class="container">
+    <div class="about-strip">
+      <div class="about-text">
+        <span class="tag orange" style="margin-bottom:1rem;display:inline-block">Principal Engineer · Stryker</span>
+        <h2>Built by Ajeet Yadav</h2>
+        <p style="margin-top:0.75rem">
+          10+ years in surgical robotics. Component lead for Stryker's Mako real-time visualization stack.
+          IIT Kanpur M.Tech. Open to senior rendering / graphics roles at NVIDIA.
+        </p>
+        <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap">
+          <a href="/about" class="btn btn-primary">About me →</a>
+          <a href="https://linkedin.com/in/ajeet-yadav-b1133991" target="_blank" class="btn btn-ghost">LinkedIn ↗</a>
+        </div>
+      </div>
+      <div class="tech-stack">
+        <span class="tag">C++20</span>
+        <span class="tag">Vulkan</span>
+        <span class="tag">Metal</span>
+        <span class="tag">OpenGL 4.5</span>
+        <span class="tag">GLSL</span>
+        <span class="tag">SPIRV-Cross</span>
+        <span class="tag">CUDA</span>
+        <span class="tag">gsplat</span>
+        <span class="tag">3DGS</span>
+        <span class="tag">PyTorch</span>
+        <span class="tag">TensorFlow</span>
+        <span class="tag">OpenCV</span>
+        <span class="tag">CMake</span>
+        <span class="tag">ECS</span>
+        <span class="tag">DGX Spark</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.hero { padding-top: 5rem; padding-bottom: 4rem; }
+.hero-eyebrow { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.hero-title { font-size: clamp(2rem, 5vw, 3.2rem); margin-bottom: 1.25rem; }
+.accent { color: var(--orange); }
+.hero-desc { max-width: 620px; font-size: 1.05rem; margin-bottom: 2rem; }
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+.stats-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+}
+.stat { padding: 1.5rem 2.5rem; text-align: center; }
+.stat-num { display: block; font-size: 1.6rem; font-weight: 600; color: var(--orange-light); font-family: var(--font-mono); }
+.stat-label { display: block; font-size: 0.78rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-div { width: 1px; height: 40px; background: var(--border); flex-shrink: 0; }
+
+.section-heading { margin-bottom: 0.5rem; }
+.section-sub { margin-bottom: 2.5rem; font-size: 1rem; }
+
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
+.card-link { text-decoration: none; display: block; position: relative; }
+.card-link h3 { color: var(--text); margin: 0.75rem 0 0.5rem; }
+.card-link p { font-size: 0.9rem; }
+.card-icon { font-size: 1.4rem; color: var(--orange); }
+.card-arrow { position: absolute; bottom: 1.5rem; right: 1.5rem; color: var(--orange); font-size: 1.1rem; opacity: 0; transition: opacity 0.2s; }
+.card-link:hover .card-arrow { opacity: 1; }
+
+.about-strip { display: flex; gap: 4rem; align-items: flex-start; }
+.about-text { flex: 1; }
+.about-text h2 { margin-bottom: 0; }
+.tech-stack { display: flex; flex-wrap: wrap; gap: 0.5rem; align-content: flex-start; max-width: 280px; padding-top: 0.5rem; }
+
+@media (max-width: 768px) {
+  .about-strip { flex-direction: column; }
+  .tech-stack { max-width: 100%; }
+  .stats-row { flex-wrap: wrap; justify-content: center; }
+  .stat-div { display: none; }
+}
+</style>

@@ -1,0 +1,160 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const backends = [
+  { name: 'Vulkan', status: 'active', desc: 'Primary backend, cross-platform' },
+  { name: 'Metal', status: 'active', desc: 'macOS, iOS, visionOS' },
+  { name: 'OpenGL 4.5', status: 'active', desc: 'Desktop Linux, Windows' },
+  { name: 'OpenGL ES 3.0', status: 'active', desc: 'Mobile, embedded' },
+  { name: 'WebGPU', status: 'planned', desc: 'Web target (future)' },
+];
+
+const modules = [
+  { name: 'vnewindow', desc: 'Cross-platform windowing abstraction' },
+  { name: 'vnerhi', desc: 'Unified render hardware interface' },
+  { name: 'vnemath', desc: 'Math library — vectors, matrices, transforms' },
+  { name: 'vnelog', desc: 'Structured logging' },
+  { name: 'vneevents', desc: 'Event system and input handling' },
+  { name: 'vnescene', desc: 'ECS-based scene graph' },
+  { name: 'vneio', desc: 'Asset I/O — mesh, texture loading' },
+];
+
+const platforms = ['macOS', 'iOS', 'visionOS', 'Linux', 'Windows', 'Web'];
+---
+<BaseLayout title="Engine" description="VertexNova — multi-backend C++20 rendering engine architecture, roadmap and modules.">
+
+<section class="section">
+  <div class="container">
+    <span class="tag orange">Open source · C++20</span>
+    <h1 style="margin-top:1rem">VertexNova Engine</h1>
+    <p class="hero-desc" style="max-width:640px;margin-top:0.75rem">
+      A modular, multi-backend 3D rendering engine built in modern C++20.
+      One unified RHI layer across Vulkan, Metal, OpenGL, and OpenGL ES —
+      build once, run on six platforms.
+    </p>
+    <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap">
+      <a href="https://learnvertexnova.com" target="_blank" class="btn btn-primary">Full docs ↗</a>
+      <a href="https://github.com/vertexnova" target="_blank" class="btn btn-ghost">GitHub ↗</a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="section">
+  <div class="container">
+    <div class="two-col">
+      <div>
+        <h2>Render backends</h2>
+        <p style="margin-bottom:1.5rem">All backends share a single RHI API. Switch targets at build time.</p>
+        <div class="backend-list">
+          {backends.map(b => (
+            <div class="backend-row">
+              <div class="backend-dot" data-status={b.status}></div>
+              <div>
+                <span class="backend-name">{b.name}</span>
+                <span class="backend-desc">{b.desc}</span>
+              </div>
+              <span class={`tag ${b.status === 'active' ? 'orange' : ''}`}>{b.status}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <h2>Target platforms</h2>
+        <p style="margin-bottom:1.5rem">One codebase, six build targets.</p>
+        <div class="platform-grid">
+          {platforms.map(p => (
+            <div class="platform-pill">{p}</div>
+          ))}
+        </div>
+        <h2 style="margin-top:2rem">Key techniques</h2>
+        <ul class="feature-list">
+          <li>Order-independent transparency (OIT)</li>
+          <li>Constructive solid geometry (CSG)</li>
+          <li>GPU picking and selection</li>
+          <li>Multi-viewport rendering</li>
+          <li>SPIRV-Cross shader compilation</li>
+          <li>ECS-based scene visualization</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="section">
+  <div class="container">
+    <h2>Modules</h2>
+    <p style="margin-bottom:2rem">Each module is a standalone library with explicit dependencies.</p>
+    <div class="modules-grid">
+      {modules.map(m => (
+        <div class="card module-card">
+          <code class="module-name">{m.name}</code>
+          <p class="module-desc">{m.desc}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section class="section">
+  <div class="container">
+    <h2>Roadmap</h2>
+    <div class="roadmap">
+      <div class="roadmap-phase active">
+        <span class="phase-label">Phase 1 — in progress</span>
+        <h3>Stabilise & document</h3>
+        <p>Modular libraries, CI/CD, new demos — OIT, picking, text rendering, multi-viewport.</p>
+      </div>
+      <div class="roadmap-phase">
+        <span class="phase-label">Phase 2 — planned</span>
+        <h3>ECS runtime & editor</h3>
+        <p>Full ECS runtime, material system, scene graph, visual editor with viewport and asset browser.</p>
+      </div>
+      <div class="roadmap-phase">
+        <span class="phase-label">Future</span>
+        <h3>XR, animation, 3DGS</h3>
+        <p>OpenXR, visionOS, skeletal animation, GPU-driven rendering, 3D Gaussian Splatting integration.</p>
+      </div>
+    </div>
+    <a href="https://learnvertexnova.com/docs/docs/roadmap/" target="_blank" class="btn btn-ghost" style="margin-top:1.5rem">Full roadmap ↗</a>
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.hero-desc { color: var(--muted); font-size: 1.05rem; }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+.backend-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.backend-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); }
+.backend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.backend-dot[data-status="active"] { background: var(--orange); }
+.backend-dot[data-status="planned"] { background: var(--muted); }
+.backend-name { font-weight: 500; color: var(--text); font-size: 0.9rem; display: block; }
+.backend-desc { font-size: 0.78rem; color: var(--muted); }
+.backend-row .tag { margin-left: auto; }
+.platform-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.platform-pill { background: var(--panel); border: 1px solid var(--border); border-radius: 100px; padding: 4px 14px; font-size: 0.82rem; color: var(--text); }
+.feature-list { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+.feature-list li { font-size: 0.9rem; color: var(--muted); padding-left: 1rem; position: relative; }
+.feature-list li::before { content: '—'; position: absolute; left: 0; color: var(--orange); }
+.modules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; }
+.module-card { padding: 1rem 1.25rem; }
+.module-name { font-size: 0.9rem; color: var(--orange-light); display: block; margin-bottom: 0.4rem; }
+.module-desc { font-size: 0.82rem; }
+.roadmap { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.roadmap-phase { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
+.roadmap-phase.active { border-color: var(--orange-dark); background: color-mix(in srgb, var(--panel) 90%, var(--orange-tint)); }
+.phase-label { font-size: 0.72rem; font-family: var(--font-mono); color: var(--orange-light); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.5rem; }
+.roadmap-phase h3 { font-size: 1rem; margin-bottom: 0.5rem; }
+.roadmap-phase p { font-size: 0.85rem; }
+@media (max-width: 768px) {
+  .two-col { grid-template-columns: 1fr; gap: 2rem; }
+  .roadmap { grid-template-columns: 1fr; }
+}
+</style>
