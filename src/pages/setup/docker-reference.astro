@@ -108,7 +108,7 @@ docker run -p 8888:8888 IMAGE jupyter lab
       <div class="cmd-table">
         <div class="cmd-row"><code>docker ps</code><span>Running containers — ID, image, name, uptime, ports</span></div>
         <div class="cmd-row"><code>docker ps -a</code><span>All containers including stopped</span></div>
-        <div class="cmd-row"><code>docker ps --format "table {{'{{'}}.Names{{'}}'}}\t{{'{{'}}.Image{{'}}'}}\t{{'{{'}}.Status{{'}}'}}"</code><span>Clean readable table</span></div>
+        <div class="cmd-row"><code>docker ps --format "table &#123;&#123;.Names&#125;&#125;\t&#123;&#123;.Image&#125;&#125;\t&#123;&#123;.Status&#125;&#125;"</code><span>Clean readable table</span></div>
       </div>
 
       <h3>Resource usage</h3>
@@ -242,7 +242,7 @@ ajeet/aiml-spark:v1       # next to build</code></pre>
 
       <h3>Check disk first</h3>
       <pre><code>docker system df
-docker images --format "table {{'{{'}}.Repository{{'}}'}}:{{'{{'}}.Tag{{'}}'}}\t{{'{{'}}.Size{{'}}'}}"</code></pre>
+docker images --format "table &#123;&#123;.Repository&#125;&#125;:&#123;&#123;.Tag&#125;&#125;\t&#123;&#123;.Size&#125;&#125;"</code></pre>
 
       <h3>Safe cleanup</h3>
       <div class="cmd-table">
