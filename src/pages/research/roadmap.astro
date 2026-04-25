@@ -1,0 +1,217 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const phases = [
+  {
+    id: 'phase1',
+    label: 'Phase 1 — now',
+    title: '3D Gaussian Splatting foundations',
+    status: 'active',
+    goal: 'Understand 3DGS from first principles, get first scene rendering on DGX Spark, integrate into VertexNova.',
+    steps: [
+      { title: '3DGS theory — first principles', status: 'active', desc: 'Gaussian ellipsoids, tile-based rasterization, alpha blending, spherical harmonics. How it maps to existing OIT knowledge from Stryker.', link: '/research/3dgs-first-principles' },
+      { title: 'gsplat on DGX Spark — ARM64 build', status: 'done', desc: 'gsplat 1.5.3 from source on GB10 Blackwell. SM 12.0 arch, --no-build-isolation, PyTorch 2.7 compatibility.', link: '/research/gsplat-dgx-spark-build' },
+      { title: 'First 3DGS scene rendering', status: 'active', desc: 'Download pre-trained garden scene. View in nerfstudio. Understand what the .ply file contains and how the rasterizer works.', link: null },
+      { title: '3DGS viewer in VertexNova', status: 'planned', desc: 'Create vne3dgs module. Parse .ply Gaussian attributes. First OpenGL render pass — blobs on screen before beauty.', link: null },
+    ]
+  },
+  {
+    id: 'phase2',
+    label: 'Phase 2 — next',
+    title: 'Neural rendering depth',
+    status: 'planned',
+    goal: 'Understand the full neural rendering landscape — NeRF vs 3DGS, 4DGS for dynamic scenes, training from own images.',
+    steps: [
+      { title: '3DGS vs NeRF — rendering engineer\'s comparison', status: 'planned', desc: 'Speed, quality, editability, storage tradeoffs. When to use each. From a real-time rendering background, not an ML background.', link: null },
+      { title: 'COLMAP pipeline — first own scene', status: 'planned', desc: 'Capture photos → COLMAP → sparse point cloud → 3DGS training. First surgical-style scene reconstruction.', link: null },
+      { title: 'nerfstudio full training pipeline', status: 'planned', desc: 'vertexnova/nerfstudio-spark container. Train splatfacto on custom data. Measure training time on GB10 vs reported benchmarks.', link: null },
+      { title: '4D Gaussian Splatting — dynamic scenes', status: 'planned', desc: '4D-GS achieves 82 FPS at 800x800 for temporal sequences. Apply to surgical anatomy — moving instruments, tissue deformation.', link: null },
+    ]
+  },
+  {
+    id: 'phase3',
+    label: 'Phase 3 — NVIDIA signal',
+    title: 'Vulkan + ray tracing + NVIDIA stack',
+    status: 'planned',
+    goal: 'Close the key gaps identified for NVIDIA Omniverse and neural graphics roles. Public demos that signal readiness.',
+    steps: [
+      { title: 'Vulkan backend in VertexNova', status: 'planned', desc: 'Ship the Vulkan renderer. Profile with NVIDIA Nsight Graphics. Write a technical blog post. This is the single biggest NVIDIA signal.', link: null },
+      { title: 'Vulkan ray tracing first pass', status: 'planned', desc: 'VK_KHR_ray_tracing_pipeline. Simple path tracer. Shows understanding of RTX hardware — core to NVIDIA\'s stack.', link: null },
+      { title: 'CUDA compute in VertexNova', status: 'planned', desc: 'Parallel mesh processing pipeline using CUDA. Connects C++ rendering background with GPU compute fluency.', link: null },
+      { title: 'OpenUSD + 3DGS integration', status: 'planned', desc: 'OpenUSD added official GS support in April 2026. Import a USD scene into VertexNova or write a USD-to-splat pipeline. Direct Omniverse bridge.', link: null },
+    ]
+  },
+  {
+    id: 'phase4',
+    label: 'Phase 4 — original contribution',
+    title: 'Medical 3DGS — novel territory',
+    status: 'planned',
+    goal: 'Apply 3DGS to surgical visualization — a domain nobody has seriously explored. Potential paper or patent.',
+    steps: [
+      { title: 'Surgical scene reconstruction with 3DGS', status: 'planned', desc: 'Endoscopic footage or CT multi-view → COLMAP → 3DGS training → real-time Vulkan render. Unique combination of OR rendering experience + 3DGS.', link: null },
+      { title: '2DGS / Gaussian Frosting for mesh extraction', status: 'planned', desc: 'Extract meshes from trained Gaussian scenes. Bridge between traditional mesh-based surgical planning (Stryker background) and neural rendering.', link: null },
+      { title: 'Research writeup / paper draft', status: 'planned', desc: 'Document findings. Target a venue like MICCAI or IEEE VR. Patent potential given surgical visualization background and existing co-inventor credits.', link: null },
+    ]
+  },
+];
+
+const statusLabel: Record<string, string> = {
+  done: 'done',
+  active: 'active',
+  planned: 'planned',
+};
+---
+<BaseLayout title="Research roadmap" description="Step-by-step research plan: 3DGS, neural rendering, Vulkan ray tracing, and medical visualization.">
+
+<section class="section">
+  <div class="container">
+
+    <div class="page-hero">
+      <span class="tag orange">Research roadmap</span>
+      <h1>3DGS · Neural rendering · Vulkan</h1>
+      <p class="lead">
+        A structured path from 3D Gaussian Splatting foundations to original contributions in
+        surgical visualization. Four phases — each building toward NVIDIA-relevant skills and
+        novel research territory.
+      </p>
+    </div>
+
+    <div class="phases">
+      {phases.map((phase) => (
+        <div class={`phase phase-${phase.status}`}>
+          <div class="phase-header">
+            <div class="phase-meta">
+              <span class={`phase-badge ${phase.status}`}>{phase.label}</span>
+              <h2 class="phase-title">{phase.title}</h2>
+            </div>
+            <p class="phase-goal">{phase.goal}</p>
+          </div>
+
+          <div class="steps">
+            {phase.steps.map((step, i) => (
+              <div class={`step step-${step.status}`}>
+                <div class="step-left">
+                  <div class={`step-dot dot-${step.status}`}></div>
+                  <div class="step-line"></div>
+                </div>
+                <div class="step-body">
+                  <div class="step-header-row">
+                    <span class="step-num">{String(i + 1).padStart(2, '0')}</span>
+                    {step.link
+                      ? <a href={step.link} class="step-title-link">{step.title} →</a>
+                      : <span class="step-title-text">{step.title}</span>
+                    }
+                    <span class={`step-badge ${step.status}`}>{statusLabel[step.status]}</span>
+                  </div>
+                  <p class="step-desc">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="nvidia-section">
+      <div class="nvidia-header">
+        <span class="tag orange">Target</span>
+        <h2>NVIDIA team alignment</h2>
+        <p>Which NVIDIA teams each phase maps to.</p>
+      </div>
+      <div class="nvidia-grid">
+        <div class="nvidia-card">
+          <span class="nvidia-phase">Phase 1–2</span>
+          <span class="nvidia-team">Neural Graphics SDKs</span>
+          <p>3DGS + gsplat + DGX Spark work maps directly to NVIDIA's Neural Graphics team hiring.</p>
+        </div>
+        <div class="nvidia-card">
+          <span class="nvidia-phase">Phase 2–3</span>
+          <span class="nvidia-team">Omniverse / Isaac Sim</span>
+          <p>nerfstudio + OpenUSD + simulation background from Stryker robotic surgery platform.</p>
+        </div>
+        <div class="nvidia-card">
+          <span class="nvidia-phase">Phase 3</span>
+          <span class="nvidia-team">RTX / Graphics Research</span>
+          <p>Vulkan ray tracing + VertexNova multi-backend engine + CUDA compute pipeline.</p>
+        </div>
+        <div class="nvidia-card">
+          <span class="nvidia-phase">Phase 4</span>
+          <span class="nvidia-team">Healthcare / Robotics</span>
+          <p>Medical 3DGS is novel territory. Surgical visualization + neural rendering is a unique combination nobody else has.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</BaseLayout>
+
+<style>
+.page-hero { margin-bottom: 3rem; }
+.page-hero h1 { margin-top: 0.75rem; margin-bottom: 0.75rem; }
+.lead { max-width: 640px; font-size: 1.05rem; color: var(--muted); }
+
+.phases { display: flex; flex-direction: column; gap: 2.5rem; }
+
+.phase { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.phase-active { border-color: var(--orange-dark); }
+.phase-planned { opacity: 0.85; }
+
+.phase-header { padding: 1.5rem 1.5rem 1rem; border-bottom: 1px solid var(--border); background: var(--panel); }
+.phase-meta { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+.phase-title { font-size: 1.2rem; font-weight: 600; margin: 0; }
+.phase-goal { color: var(--muted); font-size: 0.9rem; margin: 0; }
+
+.phase-badge {
+  font-family: var(--font-mono); font-size: 0.72rem;
+  padding: 3px 10px; border-radius: 100px; border: 1px solid;
+  white-space: nowrap;
+}
+.phase-badge.active { color: var(--orange-light); border-color: var(--orange-dark); background: var(--orange-tint); }
+.phase-badge.planned { color: var(--muted); border-color: var(--border); background: transparent; }
+
+.steps { padding: 1rem 1.5rem; }
+
+.step { display: flex; gap: 1rem; padding: 0.75rem 0; }
+.step:last-child .step-line { display: none; }
+
+.step-left { display: flex; flex-direction: column; align-items: center; width: 16px; flex-shrink: 0; padding-top: 4px; }
+.step-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; border: 2px solid; }
+.dot-done { background: var(--orange); border-color: var(--orange); }
+.dot-active { background: var(--orange-tint); border-color: var(--orange); }
+.dot-planned { background: transparent; border-color: var(--border); }
+.step-line { flex: 1; width: 1px; background: var(--border); margin-top: 4px; min-height: 20px; }
+
+.step-body { flex: 1; padding-bottom: 0.75rem; }
+.step-header-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.35rem; }
+.step-num { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); }
+.step-title-link { font-size: 0.95rem; font-weight: 500; color: var(--orange-light); text-decoration: none; }
+.step-title-link:hover { color: var(--orange); }
+.step-title-text { font-size: 0.95rem; font-weight: 500; color: var(--text); }
+.step-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin: 0; }
+
+.step-badge {
+  font-family: var(--font-mono); font-size: 0.65rem;
+  padding: 1px 7px; border-radius: 100px; border: 1px solid;
+  margin-left: auto;
+}
+.step-badge.done { color: var(--orange-light); border-color: var(--orange-dark); background: var(--orange-tint); }
+.step-badge.active { color: var(--orange-light); border-color: var(--orange-dark); background: var(--orange-tint); }
+.step-badge.planned { color: var(--muted); border-color: var(--border); }
+
+.nvidia-section { margin-top: 3rem; padding-top: 3rem; border-top: 1px solid var(--border); }
+.nvidia-header { margin-bottom: 1.5rem; }
+.nvidia-header h2 { margin: 0.5rem 0 0.35rem; }
+.nvidia-header p { color: var(--muted); font-size: 0.9rem; margin: 0; }
+.nvidia-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+.nvidia-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.nvidia-phase { display: block; font-family: var(--font-mono); font-size: 0.72rem; color: var(--orange-light); margin-bottom: 0.35rem; }
+.nvidia-team { display: block; font-size: 1rem; font-weight: 500; color: var(--text); margin-bottom: 0.5rem; }
+.nvidia-card p { font-size: 0.83rem; margin: 0; }
+
+@media (max-width: 768px) {
+  .step-header-row { gap: 0.4rem; }
+  .step-badge { margin-left: 0; }
+}
+</style>
