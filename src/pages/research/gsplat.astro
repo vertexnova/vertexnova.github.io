@@ -1,38 +1,38 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="gsplat — what it is and how it works" description="gsplat is a CUDA-accelerated differentiable 3D Gaussian rasterization library. Architecture, API, and DGX Spark setup.">
+<BaseLayout title="gsplat on DGX Spark" description="Practical guide to gsplat: architecture, rendering pipeline, API usage, and verified DGX Spark setup.">
 
 <section class="section">
   <div class="container">
 
     <div class="page-hero">
       <span class="tag orange">Research · 3DGS</span>
-      <h1>gsplat — what it is and how it works</h1>
+      <h1>gsplat on DGX Spark</h1>
       <p class="lead">
-        gsplat is a CUDA-accelerated, differentiable rasterization library for 3D Gaussian Splatting
-        — the open-source backbone behind nerfstudio's training pipeline. Built by teams from
-        UC Berkeley, NVIDIA, Meta, LumaAI, and others.
+        gsplat is a CUDA-accelerated differentiable rasterizer for 3D Gaussian Splatting.
+        This page explains what it does, how the pipeline works, how to use the API,
+        and how to run it reliably on DGX Spark.
       </p>
       <div class="spec-row">
         <span class="spec-pill">gsplat 1.5.3</span>
         <span class="spec-pill">PyTorch 2.7</span>
         <span class="spec-pill">CUDA 13</span>
         <span class="spec-pill">ARM64</span>
-        <span class="spec-pill">4x less memory than original</span>
+        <span class="spec-pill">memory-efficient rasterizer</span>
       </div>
     </div>
 
     <div class="tab-bar">
-      <button class="tab active" data-tab="what">What is gsplat</button>
-      <button class="tab" data-tab="how">How it works</button>
+      <button class="tab active" data-tab="what">Overview</button>
+      <button class="tab" data-tab="how">Pipeline</button>
       <button class="tab" data-tab="api">Python API</button>
-      <button class="tab" data-tab="dgx">On DGX Spark</button>
-      <button class="tab" data-tab="next">What's next</button>
+      <button class="tab" data-tab="dgx">DGX setup</button>
+      <button class="tab" data-tab="next">Integration plan</button>
     </div>
 
     <div id="what" class="tab-content active">
-      <h2>What is gsplat</h2>
+      <h2>Overview</h2>
       <p>
         gsplat is the rasterization engine that sits at the heart of 3D Gaussian Splatting.
         When you train a scene with nerfstudio or the original 3DGS paper code, gsplat
@@ -59,7 +59,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <h2>Relationship to other tools</h2>
+      <h2>Where gsplat fits</h2>
       <div class="stack-diagram">
         <div class="stack-row top">
           <div class="stack-box highlight">Your application / VertexNova</div>
@@ -79,7 +79,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         </div>
       </div>
 
-      <div class="note info">ℹ gsplat is the layer Ajeet cares most about for VertexNova integration — it's the bridge between the Gaussian scene representation and a rendered image.</div>
+      <div class="note info">gsplat is the bridge between Gaussian scene parameters and rendered pixels during both training and inference.</div>
     </div>
 
     <div id="how" class="tab-content">
@@ -123,7 +123,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
           <div class="pipeline-body">
             <h3>Tile-based sorting</h3>
             <p>The screen is divided into 16×16 pixel tiles. For each tile, all Gaussians that overlap it are collected and sorted by depth (front to back). This is what makes the renderer GPU-friendly — tiles map naturally to thread blocks.</p>
-            <p>For a rendering engineer: this is conceptually similar to the tiled deferred rendering used in modern game engines, and also very close to the OIT tile-based approaches used in Stryker's Mako visualization stack.</p>
+            <p>For rendering engineers: this is conceptually close to tiled deferred techniques and tile-based transparency workflows in real-time engines.</p>
           </div>
         </div>
 
@@ -135,8 +135,8 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
             <pre><code>C = Σᵢ cᵢ · αᵢ · Πⱼ＜ᵢ (1 - αⱼ)
 
 where αᵢ = oᵢ · exp(-0.5 · (x-μᵢ)ᵀ Σ'⁻¹ (x-μᵢ))</code></pre>
-            <p>For a rendering engineer: this is order-dependent transparency — exactly the same problem as OIT. The key insight is that 3DGS solves it by sorting, not by accumulation buffers.</p>
-            <div class="note info">ℹ Your OIT experience from Stryker is directly applicable here. 3DGS is essentially a scene-wide OIT problem solved with explicit geometry sorting.</div>
+            <p>For rendering engineers: this is the same order-dependent transparency problem as OIT. 3DGS handles it primarily through per-tile depth sorting.</p>
+            <div class="note info">3DGS can be viewed as a scene-wide transparency problem solved with explicit sorting plus Gaussian footprint evaluation.</div>
           </div>
         </div>
       </div>
@@ -237,14 +237,14 @@ def load_ply(path):
     return means, scales, quats, opacities
 
 means, scales, quats, opacities = load_ply('/workspace/garden.ply')
-print(f"Loaded {len(means)} Gaussians")</code></pre>
+print("Loaded", means.shape[0], "Gaussians")</code></pre>
 
       <div class="note info">ℹ The .ply file stores scales as log values and opacities as logit values — remember to exp() and sigmoid() them on load.</div>
     </div>
 
     <div id="dgx" class="tab-content">
       <h2>gsplat on DGX Spark</h2>
-      <p>Standard pip install doesn't work on ARM64 + CUDA 13. Must build from source.</p>
+      <p>On ARM64 + CUDA 13, install from source in the NVIDIA PyTorch container for consistent results.</p>
 
       <h3>The problem</h3>
       <div class="issue-list">
@@ -315,8 +315,8 @@ print('ALL OK')
     </div>
 
     <div id="next" class="tab-content">
-      <h2>What's next for gsplat in VertexNova</h2>
-      <p>The plan for integrating gsplat into the VertexNova rendering engine — bridging Python rasterization with the C++ OpenGL/Vulkan stack.</p>
+      <h2>Integration plan for VertexNova</h2>
+      <p>Phased plan for moving from validated Python usage to native engine integration.</p>
 
       <div class="roadmap-steps">
         <div class="roadmap-item done">
@@ -386,6 +386,21 @@ print('ALL OK')
 
   </div>
 </section>
+
+<script>
+const root = document.querySelector('.section');
+if (root) {
+  root.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const target = (tab as HTMLElement).dataset.tab;
+      root.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      root.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      if (target) document.getElementById(target)?.classList.add('active');
+    });
+  });
+}
+</script>
 </BaseLayout>
 
 <style>
@@ -474,15 +489,3 @@ pre code { background: none; border: none; padding: 0; color: var(--text); }
   .return-grid { grid-template-columns: 1fr; }
 }
 </style>
-
-<script>
-document.querySelectorAll('.tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    const target = tab.dataset.tab;
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById(target)?.classList.add('active');
-  });
-});
-</script>
