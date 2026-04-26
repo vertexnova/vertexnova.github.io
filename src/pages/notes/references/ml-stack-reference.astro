@@ -6,6 +6,12 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
 <section class="section">
   <div class="container">
 
+    <nav class="notes-breadcrumb" aria-label="Breadcrumb">
+      <a href="/notes">Notes</a>
+      <span class="notes-breadcrumb-sep" aria-hidden="true">/</span>
+      <span class="notes-breadcrumb-current">ML stack reference</span>
+    </nav>
+
     <div class="page-hero">
       <span class="tag orange">ML stack</span>
       <h1>ML stack reference</h1>
@@ -21,7 +27,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       <button class="tab" data-tab="patterns">ML patterns</button>
       <button class="tab" data-tab="python">Python</button>
       <button class="tab" data-tab="3dgs">3DGS specific</button>
-      <button class="tab" data-tab="notes">Notes template</button>
+      <button class="tab" data-tab="note-templates">Note templates</button>
     </div>
 
     <div id="numpy" class="tab-content active">
@@ -198,6 +204,9 @@ for epoch in range(n_epochs):
         <div class="cs-section">
           <div class="cs-label">Gradient control</div>
           <div class="cs-row"><code>with torch.no_grad():</code><span>Disable gradients — for inference</span></div>
+          <div class="cs-row"><code>with torch.inference_mode():</code><span>Stricter than no_grad — no version counter ops</span></div>
+          <div class="cs-row"><code>model.eval()</code><span>Turn off dropout / fix BatchNorm stats — call before eval loop</span></div>
+          <div class="cs-row"><code>model.train()</code><span>Restore training behavior after inference</span></div>
           <div class="cs-row"><code>tensor.detach()</code><span>Detach from graph — stop gradient flow</span></div>
           <div class="cs-row"><code>tensor.requires_grad_(True)</code><span>Enable gradient tracking</span></div>
           <div class="cs-row"><code>loss.backward()</code><span>Compute all gradients</span></div>
@@ -210,6 +219,36 @@ for epoch in range(n_epochs):
           <div class="cs-row"><code>model.load_state_dict(torch.load('model.pt'))</code><span>Load weights</span></div>
           <div class="cs-row"><code>torch.save(checkpoint, 'ckpt.pt')</code><span>Save full checkpoint</span></div>
           <div class="cs-row"><code>torch.compile(model)</code><span>PyTorch 2 graph compile — optional speedup (Python)</span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">Mixed precision (AMP)</div>
+          <pre><code>scaler = torch.cuda.amp.GradScaler()
+for x, y in loader:
+    optimizer.zero_grad(set_to_none=True)
+    with torch.cuda.amp.autocast():
+        loss = model(x, y)
+    scaler.scale(loss).backward()
+    scaler.step(optimizer)
+    scaler.update()</code></pre>
+          <div class="cs-row"><code>torch.cuda.amp.autocast()</code><span>Run forward in lower precision where safe</span></div>
+          <div class="cs-row"><code>GradScaler()</code><span>Scale loss to avoid fp16 underflow in backward</span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">DataLoader</div>
+          <div class="cs-row"><code>DataLoader(ds, batch_size=32, shuffle=True)</code><span>Basic batched iteration</span></div>
+          <div class="cs-row"><code>num_workers=4</code><span>Parallel CPU loading — start small on Docker/NFS</span></div>
+          <div class="cs-row"><code>pin_memory=True</code><span>Faster host→GPU copy when training on CUDA</span></div>
+          <div class="cs-row"><code>persistent_workers=True</code><span>Keep workers alive between epochs (PyTorch 1.7+)</span></div>
+          <div class="cs-row"><code>collate_fn=batch_list</code><span>Custom stacking when samples are variable-length</span></div>
+          <div class="cs-row"><code>drop_last=True</code><span>Omit final partial batch — avoids BatchNorm size-1 batch</span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">CUDA memory &amp; sync</div>
+          <div class="cs-row"><code>torch.cuda.empty_cache()</code><span>Return cached blocks to driver — does not free tensors in scope</span></div>
+          <div class="cs-row"><code>torch.cuda.memory_allocated()</code><span>Current tensor bytes on device</span></div>
+          <div class="cs-row"><code>torch.cuda.max_memory_allocated()</code><span>Peak since reset — pair with reset_peak_stats()</span></div>
+          <div class="cs-row"><code>torch.cuda.synchronize()</code><span>Block until GPU work completes — use when timing</span></div>
+          <div class="cs-row"><code>torch.cuda.reset_peak_memory_stats()</code><span>Clear peak counter before a benchmark region</span></div>
         </div>
       </div>
     </div>
@@ -327,6 +366,9 @@ for (int64_t epoch = 0; epoch &lt; 100; ++epoch) &#123;
           <div class="cs-label">Gotchas</div>
           <div class="cs-row"><code>view vs reshape</code><span>Same as Python — permute/transpose then need contiguous() before view</span></div>
           <div class="cs-row"><code>std::move(tensor)</code><span>Moving tensors is cheap; avoid copies in hot loops</span></div>
+          <div class="cs-row"><code>TORCH_MODULE(Net)</code><span>Macro: holder for <code>std::shared_ptr&lt;Net&gt;</code> with <code>-&gt;forward</code> — alternative to raw struct + make_shared</span></div>
+          <div class="cs-row"><code>torch::TensorOptions()</code><span>Default dtype float32, device CPU — chain <code>.dtype(torch::kFloat16).device(torch::kCUDA)</code></span></div>
+          <div class="cs-row"><code>torch::cuda::synchronize()</code><span>Block until CUDA work finishes — use when timing C++ paths</span></div>
           <div class="cs-row"><code>ATen threading</code><span>CPU ops use intra-op parallel; set with <code>at::set_num_threads</code> if needed</span></div>
           <div class="cs-row"><code>ABI</code><span>Prebuilt LibTorch must match compiler (e.g. libstdc++) and CUDA major</span></div>
         </div>
@@ -615,7 +657,7 @@ print(f"Radius:    &#123;radius:.2f&#125;")</code></pre>
       </div>
     </div>
 
-    <div id="notes" class="tab-content">
+    <div id="note-templates" class="tab-content">
       <div class="notes-wrap">
         <div class="notes-intro">
           <h2>ML stack — notes starter</h2>
@@ -713,6 +755,20 @@ for name, p in model.named_parameters():
 </BaseLayout>
 
 <style>
+.notes-breadcrumb {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  margin-bottom: 1rem;
+  color: var(--muted);
+}
+.notes-breadcrumb a {
+  color: var(--orange-light);
+  text-decoration: none;
+}
+.notes-breadcrumb a:hover { text-decoration: underline; color: var(--orange); }
+.notes-breadcrumb-sep { margin: 0 0.35rem; color: var(--border); }
+.notes-breadcrumb-current { color: var(--text); }
+
 .page-hero { margin-bottom: 2rem; }
 .page-hero h1 { margin-top: 0.75rem; margin-bottom: 0.75rem; }
 .lead { max-width: 620px; font-size: 1rem; color: var(--muted); }
