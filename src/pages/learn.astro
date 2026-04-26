@@ -1,0 +1,59 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+
+const learnItems = [
+  {
+    href: '/learn/learn_files/study-plan',
+    label: 'Learning path',
+    title: 'Study Plan',
+    description:
+      'A practical progression for graphics, rendering systems, and neural rendering topics used in VertexNova.',
+    tags: ['Roadmap', 'Graphics', '3DGS'],
+  },
+  {
+    href: '/learn/learn_files/cheatsheet',
+    label: 'Quick reference',
+    title: 'Cheat Sheet',
+    description:
+      'Compact notes and command snippets for quick recall while developing and experimenting.',
+    tags: ['Reference', 'Commands', 'Workflow'],
+  },
+] as const;
+---
+
+<BaseLayout title="Learn" description="Learning resources and study material for VertexNova.">
+  <section class="section">
+    <div class="container">
+      <PageHeader
+        eyebrow="Learn"
+        title="Learning Resources"
+        description="Structured learning material for graphics, rendering workflows, and VertexNova-related development."
+      />
+
+      <div class="learn-list">
+        {learnItems.map(item => (
+          <a href={item.href} class="learn-card card">
+            <div class="learn-meta">
+              <span class="tag orange" style="font-size:0.68rem">{item.label}</span>
+            </div>
+            <h3 class="learn-title">{item.title}</h3>
+            <p class="learn-desc">{item.description}</p>
+            <div class="learn-tags">
+              {item.tags.map(tag => <span class="tag">{tag}</span>)}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+.learn-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.learn-card { display: block; text-decoration: none; }
+.learn-meta { display: flex; align-items: center; margin-bottom: 0.75rem; }
+.learn-title { color: var(--text); margin-bottom: 0.5rem; font-size: 1.1rem; }
+.learn-desc { font-size: 0.92rem; margin: 0 0 1rem; line-height: 1.7; color: var(--muted); }
+.learn-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+</style>
