@@ -1,0 +1,203 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const weeks = [
+  {
+    week: 'Week 1–2',
+    theme: 'Python fluency for ML',
+    focus: 'numpy + Python patterns used daily in ML code',
+    status: 'start here',
+    topics: [
+      { title: 'numpy array ops', desc: 'Slicing, broadcasting, stacking, reshaping. Think of it as CPU tensor math.', code: 'np.stack([a,b], axis=1)  # [N,2]\na[a > 0.5]              # boolean mask\nnp.exp(arr)             # elementwise' },
+      { title: 'Python dataclasses', desc: 'Already used in vne3dgs GaussianScene. Understand @dataclass, field(), __post_init__.', code: '@dataclass\nclass Scene:\n    means: torch.Tensor\n    n: int = field(init=False)\n    def __post_init__(self):\n        self.n = len(self.means)' },
+      { title: 'pathlib + argparse', desc: 'Used in every ML script. pathlib replaces os.path. argparse for CLI tools.', code: 'from pathlib import Path\np = Path("/workspace/datasets/garden")\nply = p / "point_cloud.ply"\nprint(ply.exists(), ply.suffix)' },
+      { title: 'List comprehensions + generators', desc: 'Core Python idiom. Used everywhere in data loading.', code: '# Comprehension\nscores = [f(x) for x in data if x > 0]\n\n# Generator (memory efficient)\ndef load_frames(paths):\n    for p in paths:\n        yield imageio.imread(p)' },
+      { title: 'typing module', desc: 'Already in vne3dgs code. Optional, Tuple, List, Dict, Union.', code: 'from typing import Optional, Tuple\ndef render(\n    scene: GaussianScene,\n    background: Optional[torch.Tensor] = None,\n) -> Tuple[np.ndarray, torch.Tensor]:' },
+    ]
+  },
+  {
+    week: 'Week 3–4',
+    theme: 'PyTorch tensors',
+    focus: 'Tensor operations — the GPU buffer model you already understand',
+    status: 'core',
+    topics: [
+      { title: 'Tensor creation + devices', desc: 'Moving data between CPU and GPU. Your C++ GPU buffer mental model applies directly.', code: 'x = torch.randn(N, 3, device="cuda")  # on GPU\ny = x.cpu()                            # to CPU\nz = y.to("cuda")                       # back to GPU\nprint(x.shape, x.dtype, x.device)' },
+      { title: 'Tensor ops — the important ones', desc: 'These 10 operations cover 80% of ML code.', code: 'x.shape          # dimensions\nx.view(N, -1)    # reshape (like reinterpret_cast)\nx.unsqueeze(0)   # add dim  [N,3] → [1,N,3]\nx.squeeze(0)     # remove dim\nx @ y            # matrix multiply\nx * y            # elementwise multiply\nx.norm(dim=-1)   # L2 norm per row\nx.mean(dim=0)    # mean along axis\ntorch.cat([a,b]) # concatenate\ntorch.stack([a,b], dim=0)  # stack new dim' },
+      { title: 'Broadcasting', desc: 'Most confusing concept — but you used it in renderer.py already.', code: '# bg.view(1,1,3) broadcasts over [H,W,3]\nbg = torch.ones(3)           # [3]\nbg = bg.view(1, 1, 3)        # [1,1,3]\nimage = renders * alpha      # [H,W,3] * [H,W,1]\nout = image + bg * (1-alpha) # broadcasts correctly' },
+      { title: 'No-grad inference', desc: 'Always wrap inference in torch.no_grad() — disables gradient tracking, saves memory.', code: 'with torch.no_grad():\n    renders, alphas, _ = rasterization(\n        means, quats, scales, ...\n    )\n# Same as const in C++ — no gradients needed' },
+      { title: 'Autograd basics', desc: 'How gsplat training works — gradients flow back through the rasterizer to the Gaussian params.', code: 'means = torch.randn(N, 3, requires_grad=True)\nloss = render_and_compare(means, target_image)\nloss.backward()          # compute gradients\nprint(means.grad)        # dLoss/d_means\nmeans = means - lr * means.grad  # gradient descent' },
+    ]
+  },
+  {
+    week: 'Week 5–6',
+    theme: 'torch.nn — building networks',
+    focus: 'How neural networks are structured in PyTorch',
+    status: 'next',
+    topics: [
+      { title: 'nn.Module', desc: 'Every neural network is a Module. Parameters are tensors with requires_grad=True.', code: 'class SimpleNet(nn.Module):\n    def __init__(self):\n        super().__init__()\n        self.fc = nn.Linear(3, 64)\n        self.out = nn.Linear(64, 1)\n\n    def forward(self, x):\n        x = torch.relu(self.fc(x))\n        return self.out(x)' },
+      { title: 'Training loop', desc: 'The fundamental pattern — forward, loss, backward, step. Used in nerfstudio 3DGS training.', code: 'optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)\n\nfor epoch in range(100):\n    pred = model(x)                  # forward\n    loss = F.mse_loss(pred, target)  # loss\n    optimizer.zero_grad()            # clear grads\n    loss.backward()                  # backward\n    optimizer.step()                 # update\n    print(f"loss: {loss.item():.4f}")' },
+      { title: 'DataLoader', desc: 'Batched data feeding — critical for training on large datasets.', code: 'from torch.utils.data import Dataset, DataLoader\n\nclass SceneDataset(Dataset):\n    def __len__(self): return len(self.frames)\n    def __getitem__(self, i): return self.frames[i]\n\nloader = DataLoader(dataset, batch_size=32, shuffle=True)\nfor batch in loader:\n    loss = train_step(batch)' },
+    ]
+  },
+  {
+    week: 'Week 7–8',
+    theme: '3DGS training pipeline',
+    focus: 'Apply everything — train a real scene with nerfstudio',
+    status: 'project',
+    topics: [
+      { title: 'nerfstudio splatfacto training', desc: 'Train 3DGS on your own photos. COLMAP → point cloud → gsplat optimization.', code: '# Install nerfstudio\npip install nerfstudio\n\n# Process your images\nns-process-data images \\\n  --data ./my_photos \\\n  --output-dir ./my_scene\n\n# Train\nns-train splatfacto \\\n  --data ./my_scene' },
+      { title: 'Read gsplat source', desc: 'gsplat/rendering.py is the best PyTorch learning material available. Read the rasterization() function.', code: '# On DGX Spark\ncat /usr/local/lib/python3.12/dist-packages/gsplat/rendering.py\n\n# Key things to understand:\n# - How Gaussian params flow through the pipeline\n# - Where gradients are computed\n# - How tile sorting works' },
+      { title: 'Revive robe.ai — spine segmentation', desc: 'Your 2018-2020 work updated to 2026 PyTorch. Apply modern techniques to the same problem.', code: '# Modern equivalent of your TF1 spine segmentation\nimport torch\nimport torch.nn as nn\nfrom torchvision.models.segmentation import deeplabv3_resnet50\n\nmodel = deeplabv3_resnet50(num_classes=2)  # spine / not-spine\nmodel = model.cuda()' },
+    ]
+  },
+];
+---
+<BaseLayout title="Python & PyTorch study plan" description="Structured 8-week study plan for Python and PyTorch — tailored for a C++ rendering engineer.">
+
+<section class="section">
+  <div class="container">
+
+    <div class="page-hero">
+      <span class="tag orange">Learning path</span>
+      <h1>Python & PyTorch for C++ engineers</h1>
+      <p class="lead">
+        8-week structured plan — not generic tutorials, but targeted gaps for a C++ rendering engineer
+        who already thinks in GPU buffers, memory layouts, and shader math.
+        Learn through vne3dgs and 3DGS work, not toy examples.
+      </p>
+      <div class="hero-actions">
+        <a class="hero-link" href="/learn/learn_files/cheatsheet">Open cheatsheet</a>
+        <a class="hero-link muted" href="/learn/learn_files/study-plan">Stay on study plan</a>
+      </div>
+    </div>
+
+    <div class="principle-row">
+      <div class="principle">
+        <span class="principle-icon">◈</span>
+        <span class="principle-title">Learn by doing</span>
+        <p>Every topic connects to vne3dgs, gsplat, or nerfstudio. No toy examples.</p>
+      </div>
+      <div class="principle">
+        <span class="principle-icon">◎</span>
+        <span class="principle-title">C++ mental model</span>
+        <p>Tensors = GPU buffers. Autograd = derivative tracking. Module = class with parameters.</p>
+      </div>
+      <div class="principle">
+        <span class="principle-icon">✦</span>
+        <span class="principle-title">1 hour/day</span>
+        <p>Alongside active projects. Not a separate track — woven into what you're building.</p>
+      </div>
+    </div>
+
+    <div class="weeks">
+      {weeks.map((w) => (
+        <div class="week-block">
+          <div class="week-header">
+            <div class="week-meta">
+              <span class={`week-badge ${w.status === 'start here' ? 'active' : w.status === 'project' ? 'orange' : ''}`}>
+                {w.week}
+              </span>
+              <h2 class="week-title">{w.theme}</h2>
+            </div>
+            <p class="week-focus">{w.focus}</p>
+          </div>
+
+          <div class="topics">
+            {w.topics.map((t) => (
+              <div class="topic">
+                <div class="topic-header">
+                  <span class="topic-title">{t.title}</span>
+                </div>
+                <p class="topic-desc">{t.desc}</p>
+                <pre><code>{t.code}</code></pre>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div class="resources-section">
+      <h2>Key resources — in order</h2>
+      <div class="resource-grid">
+        <a href="https://course.fast.ai" target="_blank" class="resource-card">
+          <span class="resource-num">01</span>
+          <span class="resource-title">fast.ai Practical Deep Learning</span>
+          <p>Starts with code, not theory. Designed for engineers. Free. Best first resource.</p>
+          <span class="resource-link-label">course.fast.ai ↗</span>
+        </a>
+        <a href="https://pytorch.org/tutorials/beginner/pytorch_with_examples.html" target="_blank" class="resource-card">
+          <span class="resource-num">02</span>
+          <span class="resource-title">PyTorch — Learning with Examples</span>
+          <p>Official tutorial. "Neural Networks" section is the essential training loop reference.</p>
+          <span class="resource-link-label">pytorch.org ↗</span>
+        </a>
+        <a href="https://github.com/nerfstudio-project/gsplat/blob/main/gsplat/rendering.py" target="_blank" class="resource-card">
+          <span class="resource-num">03</span>
+          <span class="resource-title">gsplat/rendering.py source</span>
+          <p>Production PyTorch + CUDA by Berkeley/NVIDIA engineers. Better than any tutorial.</p>
+          <span class="resource-link-label">github.com ↗</span>
+        </a>
+        <a href="https://numpy.org/doc/stable/user/numpy-for-matlab-users.html" target="_blank" class="resource-card">
+          <span class="resource-num">04</span>
+          <span class="resource-title">NumPy for MATLAB users</span>
+          <p>Your MATLAB Simulink background at TCS makes this the fastest numpy reference.</p>
+          <span class="resource-link-label">numpy.org ↗</span>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+</BaseLayout>
+
+<style>
+.page-hero { margin-bottom: 2.5rem; }
+.page-hero h1 { margin-top: 0.75rem; margin-bottom: 0.75rem; }
+.lead { max-width: 660px; font-size: 1.05rem; color: var(--muted); }
+.hero-actions { display: flex; gap: 0.65rem; flex-wrap: wrap; margin-top: 1rem; }
+.hero-link { font-family: var(--font-mono); font-size: 0.78rem; color: var(--orange-light); text-decoration: none; border: 1px solid var(--orange-dark); background: var(--orange-tint); border-radius: 999px; padding: 6px 12px; transition: border-color 0.15s, color 0.15s; }
+.hero-link:hover { border-color: var(--orange); color: var(--orange); }
+.hero-link.muted { color: var(--muted); border-color: var(--border); background: var(--panel); }
+.hero-link.muted:hover { color: var(--text); border-color: var(--orange-dark); }
+
+.principle-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 3rem; }
+.principle { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+.principle-icon { font-size: 1.2rem; color: var(--orange); display: block; margin-bottom: 0.5rem; }
+.principle-title { display: block; font-weight: 500; font-size: 0.95rem; margin-bottom: 0.4rem; }
+.principle p { font-size: 0.85rem; margin: 0; color: var(--muted); }
+
+.weeks { display: flex; flex-direction: column; gap: 2rem; }
+.week-block { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+.week-header { padding: 1.25rem 1.5rem 1rem; background: var(--panel); border-bottom: 1px solid var(--border); }
+.week-meta { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.4rem; }
+.week-title { font-size: 1.15rem; font-weight: 600; margin: 0; }
+.week-focus { color: var(--muted); font-size: 0.88rem; margin: 0; }
+.week-badge { font-family: var(--font-mono); font-size: 0.72rem; padding: 3px 10px; border-radius: 100px; border: 1px solid var(--border); color: var(--muted); background: transparent; }
+.week-badge.active { color: var(--orange-light); border-color: var(--orange-dark); background: var(--orange-tint); }
+.week-badge.orange { color: var(--orange-light); border-color: var(--orange-dark); background: var(--orange-tint); }
+
+.topics { padding: 1rem 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+.topic { padding-bottom: 1.25rem; border-bottom: 1px solid var(--border); }
+.topic:last-child { border-bottom: none; padding-bottom: 0; }
+.topic-header { margin-bottom: 0.35rem; }
+.topic-title { font-weight: 500; font-size: 0.95rem; color: var(--orange-light); }
+.topic-desc { font-size: 0.85rem; color: var(--muted); margin-bottom: 0.6rem; }
+pre { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.78rem; line-height: 1.7; overflow-x: auto; margin: 0; color: var(--text); }
+pre code { background: none; border: none; padding: 0; color: inherit; font-size: inherit; }
+
+.resources-section { margin-top: 3rem; padding-top: 3rem; border-top: 1px solid var(--border); }
+.resources-section h2 { margin-bottom: 1.25rem; }
+.resource-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+.resource-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; text-decoration: none; display: block; transition: border-color 0.15s; }
+.resource-card:hover { border-color: var(--orange-dark); }
+.resource-num { font-family: var(--font-mono); font-size: 0.72rem; color: var(--orange); display: block; margin-bottom: 0.4rem; }
+.resource-title { display: block; font-size: 0.95rem; font-weight: 500; color: var(--text); margin-bottom: 0.4rem; }
+.resource-card p { font-size: 0.83rem; color: var(--muted); margin: 0 0 0.6rem; }
+.resource-link-label { font-family: var(--font-mono); font-size: 0.72rem; color: var(--orange-light); }
+
+@media (max-width: 768px) {
+  .principle-row { grid-template-columns: 1fr; }
+  .resource-grid { grid-template-columns: 1fr; }
+}
+</style>
