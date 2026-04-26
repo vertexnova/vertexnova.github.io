@@ -1,5 +1,5 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
 ---
 <BaseLayout title="Python & PyTorch cheatsheet" description="Quick reference for Python, numpy, and PyTorch — for C++ engineers working on 3DGS and rendering.">
 
@@ -172,7 +172,7 @@ for epoch in range(n_epochs):
     optimizer.step()        # update params
 
     if epoch % 10 == 0:
-        print(f"{epoch}: {loss.item():.4f}")</code></pre>
+        print(f"&#123;epoch&#125;: &#123;loss.item():.4f&#125;")</code></pre>
         </div>
         <div class="cs-section">
           <div class="cs-label">Optimizers</div>
@@ -342,7 +342,7 @@ big = [x for x in values if x > threshold]
 flat = [item for row in matrix for item in row]
 
 # Dict comprehension
-d = {k: v for k, v in zip(keys, values)}
+d = &#123;k: v for k, v in zip(keys, values)&#125;
 
 # Generator (memory efficient, no [])
 gen = (x**2 for x in range(1_000_000))</code></pre>
@@ -361,7 +361,7 @@ with torch.no_grad():
 import time
 t = time.time()
 result = expensive_op()
-print(f"{(time.time()-t)*1000:.1f}ms")</code></pre>
+print(f"&#123;(time.time()-t)*1000:.1f&#125;ms")</code></pre>
         </div>
         <div class="cs-section">
           <div class="cs-label">f-strings</div>
@@ -369,14 +369,14 @@ print(f"{(time.time()-t)*1000:.1f}ms")</code></pre>
 t = 0.133
 
 # Basic
-print(f"Gaussians: {n:,}")       # 5,834,784
-print(f"Time: {t*1000:.1f}ms")   # 133.0ms
-print(f"FPS: {1/t:.1f}")         # 7.5
+print(f"Gaussians: &#123;n:,&#125;")       # 5,834,784
+print(f"Time: &#123;t*1000:.1f&#125;ms")   # 133.0ms
+print(f"FPS: &#123;1/t:.1f&#125;")         # 7.5
 
 # Width padding
-print(f"{'loss':<10} {'value':>8}")
+print(f"&#123;'loss':<10&#125; &#123;'value':>8&#125;")
 for k,v in stats.items():
-    print(f"{k:<10} {v:>8.4f}")</code></pre>
+    print(f"&#123;k:<10&#125; &#123;v:>8.4f&#125;")</code></pre>
         </div>
       </div>
     </div>
@@ -474,10 +474,10 @@ core_center = core.mean(dim=0)
 # Orbit radius
 radius = spread * 2.0
 
-print(f"Gaussians: {len(means):,}")
-print(f"Center:    {center.cpu().numpy().round(2)}")
-print(f"Spread:    {spread:.2f}")
-print(f"Radius:    {radius:.2f}")</code></pre>
+print(f"Gaussians: &#123;len(means):,&#125;")
+print(f"Center:    &#123;center.cpu().numpy().round(2)&#125;")
+print(f"Spread:    &#123;spread:.2f&#125;")
+print(f"Radius:    &#123;radius:.2f&#125;")</code></pre>
         </div>
         <div class="cs-section">
           <div class="cs-label">DGX Spark gotchas</div>
