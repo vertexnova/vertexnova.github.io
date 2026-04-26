@@ -7,6 +7,7 @@ export default defineConfig({
   integrations: [sitemap(), mdx()],
   redirects: {
     '/learn': '/notes',
-    '/learn/learn_files/cheatsheet': '/notes/learn_files/cheatsheet',
+    '/learn/learn_files/cheatsheet': '/notes/references/ml-stack-reference',
+    '/notes/learn_files/cheatsheet': '/notes/references/ml-stack-reference',
   },
 });
