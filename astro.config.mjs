@@ -5,4 +5,8 @@ import mdx from '@astrojs/mdx';
 export default defineConfig({
   site: 'https://vertexnova.github.io',
   integrations: [sitemap(), mdx()],
+  redirects: {
+    '/learn': '/notes',
+    '/learn/learn_files/cheatsheet': '/notes/learn_files/cheatsheet',
+  },
 });

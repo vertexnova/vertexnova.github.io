@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/PageHeader.astro';
+
+const noteItems = [
+  {
+    href: '/notes/learn_files/cheatsheet',
+    label: 'Quick reference',
+    title: 'Cheat Sheet',
+    description:
+      'Compact notes and command snippets for quick recall while developing and experimenting.',
+    tags: ['Reference', 'Commands', 'Workflow'],
+  },
+] as const;
+---
+
+<BaseLayout title="Notes" description="Technical notes and quick references for VertexNova.">
+  <section class="section">
+    <div class="container">
+      <PageHeader
+        eyebrow="Notes"
+        title="Notes · references"
+        description="Quick references for graphics, ML workflows, and VertexNova-related development."
+      />
+
+      <div class="notes-list">
+        {noteItems.map(item => (
+          <a href={item.href} class="notes-card card">
+            <div class="notes-meta">
+              <span class="tag orange" style="font-size:0.68rem">{item.label}</span>
+            </div>
+            <h3 class="notes-title">{item.title}</h3>
+            <p class="notes-desc">{item.description}</p>
+            <div class="notes-tags">
+              {item.tags.map(tag => <span class="tag">{tag}</span>)}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+.notes-list { display: flex; flex-direction: column; gap: 1rem; margin-top: 2rem; }
+.notes-card { display: block; text-decoration: none; }
+.notes-meta { display: flex; align-items: center; margin-bottom: 0.75rem; }
+.notes-title { color: var(--text); margin-bottom: 0.5rem; font-size: 1.1rem; }
+.notes-desc { font-size: 0.92rem; margin: 0 0 1rem; line-height: 1.7; color: var(--muted); }
+.notes-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+</style>
