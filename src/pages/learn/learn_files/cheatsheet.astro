@@ -374,9 +374,9 @@ print(f"Time: &#123;t*1000:.1f&#125;ms")   # 133.0ms
 print(f"FPS: &#123;1/t:.1f&#125;")         # 7.5
 
 # Width padding
-print(f"&#123;'loss':<10&#125; &#123;'value':>8&#125;")
+print("%-10s %8s" % ("loss", "value"))
 for k,v in stats.items():
-    print(f"&#123;k:<10&#125; &#123;v:>8.4f&#125;")</code></pre>
+    print("%-10s %8.4f" % (k, v))</code></pre>
         </div>
       </div>
     </div>
@@ -623,11 +623,11 @@ code { font-family: var(--font-mono); font-size: 0.8rem; background: var(--panel
 <script>
 document.querySelectorAll('.tab').forEach(tab => {
   tab.addEventListener('click', () => {
-    const target = tab.dataset.tab;
+    const target = tab.getAttribute('data-tab');
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     tab.classList.add('active');
-    document.getElementById(target)?.classList.add('active');
+    if (target) document.getElementById(target)?.classList.add('active');
   });
 });
 </script>
