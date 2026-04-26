@@ -4,14 +4,6 @@ import PageHeader from '../components/PageHeader.astro';
 
 const learnItems = [
   {
-    href: '/learn/learn_files/study-plan',
-    label: 'Learning path',
-    title: 'Study Plan',
-    description:
-      'A practical progression for graphics, rendering systems, and neural rendering topics used in VertexNova.',
-    tags: ['Roadmap', 'Graphics', '3DGS'],
-  },
-  {
     href: '/learn/learn_files/cheatsheet',
     label: 'Quick reference',
     title: 'Cheat Sheet',
@@ -22,13 +14,13 @@ const learnItems = [
 ] as const;
 ---
 
-<BaseLayout title="Learn" description="Learning resources and study material for VertexNova.">
+<BaseLayout title="Learn" description="Learning resources and quick references for VertexNova.">
   <section class="section">
     <div class="container">
       <PageHeader
         eyebrow="Learn"
         title="Learning Resources"
-        description="Structured learning material for graphics, rendering workflows, and VertexNova-related development."
+        description="Quick references for graphics, ML workflows, and VertexNova-related development."
       />
 
       <div class="learn-list">
