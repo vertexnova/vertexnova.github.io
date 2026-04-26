@@ -1,15 +1,15 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 ---
-<BaseLayout title="Python & PyTorch cheatsheet" description="Quick reference for Python, numpy, and PyTorch — for C++ engineers working on 3DGS and rendering.">
+<BaseLayout title="Python, PyTorch & LibTorch cheatsheet" description="Quick reference for Python, NumPy, PyTorch, and LibTorch C++ — for engineers working on 3DGS and rendering.">
 
 <section class="section">
   <div class="container">
 
     <div class="page-hero">
       <span class="tag orange">Cheatsheet</span>
-      <h1>Python · NumPy · PyTorch</h1>
-      <p class="lead">Quick reference for daily ML work. Focused on patterns that appear in gsplat, nerfstudio, and vne3dgs.</p>
+      <h1>Python · NumPy · PyTorch · LibTorch</h1>
+      <p class="lead">Quick reference for daily ML work: Python API plus the LibTorch C++ front-end. Patterns that show up in gsplat, nerfstudio, vne3dgs, and custom C++ inference.</p>
     </div>
 
     <div class="tab-bar">
@@ -17,6 +17,7 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
       <button class="tab" data-tab="tensors">Tensors</button>
       <button class="tab" data-tab="ops">Common ops</button>
       <button class="tab" data-tab="training">Training</button>
+      <button class="tab" data-tab="libtorch">LibTorch C++</button>
       <button class="tab" data-tab="patterns">ML patterns</button>
       <button class="tab" data-tab="python">Python</button>
       <button class="tab" data-tab="3dgs">3DGS specific</button>
@@ -99,6 +100,8 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
           <div class="cs-row"><code>x.device</code><span>Returns device: cuda:0</span></div>
           <div class="cs-row"><code>torch.cuda.is_available()</code><span>Check GPU available</span></div>
           <div class="cs-row"><code>torch.cuda.get_device_name(0)</code><span>GPU name string</span></div>
+          <div class="cs-row"><code>torch.device('cuda:1')</code><span>Explicit device handle — pass to .to(device)</span></div>
+          <div class="cs-row"><code>torch.cuda.set_device(1)</code><span>Default CUDA device index for new tensors</span></div>
         </div>
         <div class="cs-section">
           <div class="cs-label">Dtype</div>
@@ -141,6 +144,8 @@ import BaseLayout from '../../../layouts/BaseLayout.astro';
           <div class="cs-row"><code>x.T</code><span>Transpose 2D tensor</span></div>
           <div class="cs-row"><code>torch.inverse(x)</code><span>Matrix inverse</span></div>
           <div class="cs-row"><code>torch.linalg.norm(x)</code><span>Matrix norm</span></div>
+          <div class="cs-row"><code>torch.bmm(a, b)</code><span>Batched matmul — [B,N,K] @ [B,K,M] → [B,N,M]</span></div>
+          <div class="cs-row"><code>torch.einsum('ij,jk->ik', a, b)</code><span>Einstein sum — same idea as tensor cores in papers</span></div>
         </div>
         <div class="cs-section">
           <div class="cs-label">Combine tensors</div>
@@ -204,6 +209,126 @@ for epoch in range(n_epochs):
           <div class="cs-row"><code>torch.save(model.state_dict(), 'model.pt')</code><span>Save weights</span></div>
           <div class="cs-row"><code>model.load_state_dict(torch.load('model.pt'))</code><span>Load weights</span></div>
           <div class="cs-row"><code>torch.save(checkpoint, 'ckpt.pt')</code><span>Save full checkpoint</span></div>
+          <div class="cs-row"><code>torch.compile(model)</code><span>PyTorch 2 graph compile — optional speedup (Python)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="libtorch" class="tab-content">
+      <p class="tab-lead">LibTorch is the C++ API for PyTorch. Types live in <code>at::</code> / <code>torch::</code>; autograd and <code>torch::nn</code> mirror Python. Match your LibTorch download to the CUDA/toolchain you link against.</p>
+      <div class="cs-grid">
+        <div class="cs-section">
+          <div class="cs-label">CMake &amp; include</div>
+          <pre><code>#include &lt;torch/torch.h&gt;
+
+# CMakeLists.txt (typical)
+find_package(Torch REQUIRED)
+target_link_libraries(myapp PRIVATE "$&#123;TORCH_LIBRARIES&#125;")
+set_property(TARGET myapp PROPERTY CXX_STANDARD 17)</code></pre>
+          <div class="cs-row"><code>-DCMAKE_PREFIX_PATH=/path/to/libtorch</code><span>Point CMake at extracted libtorch (prebuilt)</span></div>
+          <div class="cs-row"><code>$&#123;TORCH_CXX_FLAGS&#125;</code><span>Append to CMAKE_CXX_FLAGS — ABI / codegen flags from find_package</span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">Tensor creation</div>
+          <div class="cs-row"><code>torch::zeros(&#123;N, 3&#125;, torch::kCUDA)</code><span>Float32 on default CUDA device</span></div>
+          <div class="cs-row"><code>torch::randn(&#123;N, 3&#125;, torch::dtype(torch::kFloat16).device(torch::kCUDA))</code><span>Explicit TensorOptions</span></div>
+          <div class="cs-row"><code>torch::tensor(&#123;1., 2., 3.&#125;, torch::kFloat32)</code><span>From initializer list</span></div>
+          <div class="cs-row"><code>torch::from_blob(ptr, &#123;H, W, 3&#125;, torch::kFloat32).clone()</code><span>Wrap CPU memory — clone() if buffer outlives tensor</span></div>
+          <div class="cs-row"><code>torch::empty_like(x)</code><span>Uninitialized buffer same shape/device/dtype as x</span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">Shape, device, dtype</div>
+          <div class="cs-row"><code>x.sizes()</code><span>IntArrayRef — like shape in Python</span></div>
+          <div class="cs-row"><code>x.dim()</code><span>Number of dimensions</span></div>
+          <div class="cs-row"><code>x.view(&#123;N, -1&#125;)</code><span>Reshape (must be contiguous — else reshape)</span></div>
+          <div class="cs-row"><code>x.reshape(&#123;N, -1&#125;)</code><span>Reshape with copy if needed</span></div>
+          <div class="cs-row"><code>x.to(torch::kCUDA)</code><span>Move tensor to CUDA</span></div>
+          <div class="cs-row"><code>x.to(torch::kCPU)</code><span>Move to CPU</span></div>
+          <div class="cs-row"><code>x.to(torch::kFloat16)</code><span>Cast dtype</span></div>
+          <div class="cs-row"><code>x.device()</code><span>c10::Device — cuda:0 / cpu</span></div>
+          <div class="cs-row"><code>torch::cuda::is_available()</code><span>Runtime GPU check</span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">Common ops (C++)</div>
+          <div class="cs-row"><code>torch::matmul(a, b)</code><span>Same rules as Python @</span></div>
+          <div class="cs-row"><code>a.mm(b)</code><span>2D matrix multiply</span></div>
+          <div class="cs-row"><code>torch::cat(&#123;a, b&#125;, /*dim=*/0)</code><span>Concat along dim</span></div>
+          <div class="cs-row"><code>torch::stack(&#123;a, b&#125;, 0)</code><span>New leading dim</span></div>
+          <div class="cs-row"><code>torch::relu(x)</code><span>Elementwise</span></div>
+          <div class="cs-row"><code>torch::sigmoid(x)</code><span>Opacity-style activation</span></div>
+          <div class="cs-row"><code>torch::exp(x)</code><span>Scale-style activation</span></div>
+          <div class="cs-row"><code>x.clamp(0, 1)</code><span>Clip range</span></div>
+          <div class="cs-row"><code>x.norm(/*p=*/2, /*dim=*/-1, /*keepdim=*/true)</code><span>L2 norm along dim</span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">Autograd</div>
+          <div class="cs-row"><code>x.requires_grad_(true)</code><span>Track ops on this tensor</span></div>
+          <div class="cs-row"><code>loss.backward()</code><span>Accumulate grads into .grad()</span></div>
+          <div class="cs-row"><code>x.grad()</code><span>Gradient tensor — check <code>.defined()</code> before reading</span></div>
+          <div class="cs-row"><code>torch::NoGradGuard no_grad;</code><span>RAII — disable grad inside scope (inference)</span></div>
+          <div class="cs-row"><code>torch::Tensor y = x.detach();</code><span>Stop gradient through y</span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">torch::nn::Module</div>
+          <pre><code>struct Net : torch::nn::Module &#123;
+  Net()
+    : fc1(register_module("fc1", torch::nn::Linear(3, 64))),
+      fc2(register_module("fc2", torch::nn::Linear(64, 1))) &#123;&#125;
+
+  torch::Tensor forward(torch::Tensor x) &#123;
+    x = torch::relu(fc1-&gt;forward(x));
+    return fc2-&gt;forward(x);
+  &#125;
+
+  torch::nn::Linear fc1&#123;nullptr&#125;, fc2&#123;nullptr&#125;;
+&#125;;
+
+auto net = std::make_shared&lt;Net&gt;();
+net-&gt;to(torch::kCUDA);</code></pre>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">Training loop (C++)</div>
+          <pre><code>auto net = std::make_shared&lt;Net&gt;();
+net-&gt;to(torch::kCUDA);
+torch::optim::Adam optimizer(
+    net-&gt;parameters(), torch::optim::AdamOptions(1e-3));
+
+for (int64_t epoch = 0; epoch &lt; 100; ++epoch) &#123;
+  optimizer.zero_grad();
+  auto pred = net-&gt;forward(batch_x);
+  auto loss = torch::mse_loss(pred, batch_y);
+  loss.backward();
+  optimizer.step();
+&#125;</code></pre>
+          <div class="cs-row"><code>torch::optim::AdamW</code><span>Same family as Python AdamW — <code>AdamWOptions(lr)</code></span></div>
+          <div class="cs-row"><code>torch::mse_loss</code><span>Also in <code>torch/nn/functional.h</code> as <code>torch::nn::functional::mse_loss</code></span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">Save / load</div>
+          <div class="cs-row"><code>torch::save(net, "model.pt");</code><span>Archive module state (trainable module)</span></div>
+          <div class="cs-row"><code>torch::load(net, "model.pt");</code><span>Restore — net type must match saved module</span></div>
+          <div class="cs-row"><code>torch::save(tensor, "t.pt");</code><span>Single tensor or vector of tensors</span></div>
+          <div class="cs-row"><code>torch::jit::load("model.ts")</code><span>TorchScript / traced model — different pipeline from nn.Module save</span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">Python ↔ C++ weights</div>
+          <div class="cs-row"><code>torch.save(model.state_dict(), "w.pt")</code><span>Python: only tensors</span></div>
+          <div class="cs-row"><code>torch::pickle_load</code><span>C++: read Python <code>state_dict</code> bytes — map tensor names to <code>named_parameters()</code>, or prefer TorchScript for deploy</span></div>
+          <div class="cs-row"><code>torch.jit.trace / script</code><span>Python save <code>.pt</code> / archive, then <code>torch::jit::load</code> in C++ for inference</span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">Indexing &amp; scalars</div>
+          <div class="cs-row"><code>x.select(0, i)</code><span>Slice along dim 0 at index i</span></div>
+          <div class="cs-row"><code>x.masked_select(mask)</code><span>Bool <code>mask</code> same shape — returns 1D flattened values</span></div>
+          <div class="cs-row"><code>x.item&lt;float&gt;()</code><span>Scalar tensor → C++ scalar (exactly one element)</span></div>
+          <div class="cs-row"><code>x.accessor&lt;float, 2&gt;()</code><span>Fast CPU pointer view — [i][j] (CPU contiguous)</span></div>
+        </div>
+        <div class="cs-section">
+          <div class="cs-label">Gotchas</div>
+          <div class="cs-row"><code>view vs reshape</code><span>Same as Python — permute/transpose then need contiguous() before view</span></div>
+          <div class="cs-row"><code>std::move(tensor)</code><span>Moving tensors is cheap; avoid copies in hot loops</span></div>
+          <div class="cs-row"><code>ATen threading</code><span>CPU ops use intra-op parallel; set with <code>at::set_num_threads</code> if needed</span></div>
+          <div class="cs-row"><code>ABI</code><span>Prebuilt LibTorch must match compiler (e.g. libstdc++) and CUDA major</span></div>
         </div>
       </div>
     </div>
@@ -493,7 +618,7 @@ print(f"Radius:    &#123;radius:.2f&#125;")</code></pre>
     <div id="notes" class="tab-content">
       <div class="notes-wrap">
         <div class="notes-intro">
-          <h2>Python + PyTorch notes starter</h2>
+          <h2>Python, PyTorch &amp; LibTorch notes starter</h2>
           <p>Copy these templates into your notebook so every study session captures what you learned and what to practice next.</p>
         </div>
         <div class="cs-grid">
@@ -591,6 +716,7 @@ for name, p in model.named_parameters():
 .page-hero { margin-bottom: 2rem; }
 .page-hero h1 { margin-top: 0.75rem; margin-bottom: 0.75rem; }
 .lead { max-width: 620px; font-size: 1rem; color: var(--muted); }
+.tab-lead { max-width: 720px; font-size: 0.9rem; color: var(--muted); line-height: 1.65; margin: -0.5rem 0 1rem; }
 
 .tab-bar { display: flex; gap: 6px; flex-wrap: wrap; margin: 2rem 0 1.5rem; }
 .tab { font-size: 0.8rem; padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border); cursor: pointer; color: var(--muted); background: var(--panel); transition: all 0.15s; font-family: var(--font-sans); }
