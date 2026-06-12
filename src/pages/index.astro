@@ -1,26 +1,33 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import { SAMPLE_GROUPS } from '../data/samples';
+
+const totalSamples = SAMPLE_GROUPS.flatMap(g => g.samples).length;
 ---
-<BaseLayout title="Home" description="VertexNova — multi-backend 3D rendering engine and AI dev workspace by Ajeet Yadav.">
+
+<BaseLayout
+  title="WebGPU Samples"
+  description="Live WebGPU samples from the VertexNova rendering engine — running in the browser via WebAssembly."
+>
 
 <section class="hero section">
   <div class="container">
     <div class="hero-eyebrow">
-      <span class="tag orange">C++ · Vulkan · Metal · OpenGL</span>
-      <span class="tag">DGX Spark · 3DGS · Neural Rendering</span>
+      <span class="tag orange">WebGPU · WebAssembly · C++20</span>
+      <span class="tag">Emscripten · vnerhi</span>
     </div>
     <h1 class="hero-title">
-      Real-Time 3D Rendering<br/>
-      <span class="accent">& AI Dev Workspace</span>
+      VertexNova<br/>
+      <span class="accent">WebGPU Samples</span>
     </h1>
     <p class="hero-desc">
-      VertexNova is a multi-backend C++20 rendering engine targeting Vulkan, Metal, OpenGL, and OpenGL ES
-      across six platforms. This site documents the engine, AI/ML experiments on the DGX Spark,
-      3D Gaussian Splatting research, and technical devlogs.
+      {totalSamples} interactive rendering demos from the VertexNova RHI — compiled from C++20 to
+      WebAssembly with Emscripten and running live in your browser via WebGPU.
+      From a basic triangle to physically-based rendering, OIT, and medical volume rendering.
     </p>
     <div class="hero-actions">
-      <a href="/engine" class="btn btn-primary">Explore the engine →</a>
-      <a href="/setup" class="btn btn-ghost">Setup guides</a>
+      <a href="/samples" class="btn btn-primary">Launch Explorer →</a>
+      <a href="/samples/support" class="btn btn-ghost">Browser support</a>
     </div>
   </div>
 </section>
@@ -31,28 +38,28 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <div class="container">
     <div class="stats-row">
       <div class="stat">
+        <span class="stat-num">{totalSamples}</span>
+        <span class="stat-label">Live samples</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <span class="stat-num">{SAMPLE_GROUPS.length}</span>
+        <span class="stat-label">Categories</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <span class="stat-num">C++20</span>
+        <span class="stat-label">Source language</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <span class="stat-num">WGSL</span>
+        <span class="stat-label">Shader language</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
         <span class="stat-num">6</span>
-        <span class="stat-label">Platforms</span>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat">
-        <span class="stat-num">4</span>
-        <span class="stat-label">Render backends</span>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat">
-        <span class="stat-num">2</span>
-        <span class="stat-label">Patents</span>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat">
-        <span class="stat-num">10+</span>
-        <span class="stat-label">Years in robotics</span>
-      </div>
-      <div class="stat-div"></div>
-      <div class="stat">
-        <span class="stat-num">128GB</span>
-        <span class="stat-label">DGX Spark memory</span>
+        <span class="stat-label">Target platforms</span>
       </div>
     </div>
   </div>
@@ -62,39 +69,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <section class="section">
   <div class="container">
-    <h2 class="section-heading">What's here</h2>
-    <p class="section-sub">A living workspace — engine docs, setup guides, research notes, quick ML references, and devlogs.</p>
-    <div class="cards-grid">
-      <a href="/engine" class="card card-link">
-        <div class="card-icon">◈</div>
-        <h3>VertexNova Engine</h3>
-        <p>Architecture, roadmap, demos, and design decisions behind the multi-backend C++20 renderer.</p>
-        <span class="card-arrow">→</span>
-      </a>
-      <a href="/setup" class="card card-link">
-        <div class="card-icon">⚙</div>
-        <h3>Setup guides</h3>
-        <p>DGX Spark configuration, Docker containers, gsplat install, CUDA arch quirks, and dev environment setup.</p>
-        <span class="card-arrow">→</span>
-      </a>
-      <a href="/research" class="card card-link">
-        <div class="card-icon">◎</div>
-        <h3>Research notes</h3>
-        <p>3D Gaussian Splatting deep dives, NeRF comparisons, Vulkan ray tracing experiments, and neural rendering.</p>
-        <span class="card-arrow">→</span>
-      </a>
-      <a href="/notes" class="card card-link">
-        <div class="card-icon">◇</div>
-        <h3>Notes</h3>
-        <p>ML stack reference — Python, NumPy, PyTorch, LibTorch C++, and 3DGS-oriented snippets. More references can live here over time.</p>
-        <span class="card-arrow">→</span>
-      </a>
-      <a href="/blog" class="card card-link">
-        <div class="card-icon">✦</div>
-        <h3>Blog & devlog</h3>
-        <p>Weekly experiments, rendering discoveries, DGX Spark findings, and technical observations.</p>
-        <span class="card-arrow">→</span>
-      </a>
+    <h2 class="section-heading">Sample categories</h2>
+    <p class="section-sub">Select any category in the explorer to jump straight to those demos.</p>
+    <div class="categories-grid">
+      {SAMPLE_GROUPS.map(group => (
+        <a href={`/samples#${group.samples[0].slug}`} class="cat-card card card-link">
+          <div class="cat-count">{group.samples.length}</div>
+          <h3>{group.label}</h3>
+          <p>{group.samples.slice(0, 3).map(s => s.title).join(' · ')}{group.samples.length > 3 ? ' …' : ''}</p>
+          <span class="card-arrow">→</span>
+        </a>
+      ))}
     </div>
   </div>
 </section>
@@ -103,35 +88,30 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 <section class="section">
   <div class="container">
-    <div class="about-strip">
-      <div class="about-text">
-        <span class="tag orange" style="margin-bottom:1rem;display:inline-block">Principal Engineer · Surgical Robotics</span>
-        <h2>Built by Ajeet Yadav</h2>
+    <div class="engine-strip">
+      <div class="engine-text">
+        <span class="tag orange" style="margin-bottom:1rem;display:inline-block">Open source · github.com/vertexnova</span>
+        <h2>Built with VertexNova RHI</h2>
         <p style="margin-top:0.75rem">
-          10+ years in surgical robotics. Component lead for a real-time visualization stack used in robotic surgery.
-          IIT Kanpur M.Tech. Open to senior rendering / graphics roles at NVIDIA.
+          These samples are compiled from the same C++20 source that runs natively on Vulkan, Metal,
+          and OpenGL across six platforms. The WebGPU backend targets the browser via Emscripten.
         </p>
         <div style="display:flex;gap:0.75rem;margin-top:1.5rem;flex-wrap:wrap">
-          <a href="/about" class="btn btn-primary">About me →</a>
-          <a href="https://linkedin.com/in/ajeet-yadav-b1133991" target="_blank" class="btn btn-ghost">LinkedIn ↗</a>
+          <a href="https://ajeetsinghyadav.github.io/engine" target="_blank" class="btn btn-primary">Engine docs ↗</a>
+          <a href="https://github.com/vertexnova/vnerhi" target="_blank" class="btn btn-ghost">Source code ↗</a>
         </div>
       </div>
       <div class="tech-stack">
         <span class="tag">C++20</span>
+        <span class="tag">WebGPU</span>
+        <span class="tag">WGSL</span>
+        <span class="tag">Emscripten</span>
+        <span class="tag">WebAssembly</span>
         <span class="tag">Vulkan</span>
         <span class="tag">Metal</span>
-        <span class="tag">OpenGL 4.5</span>
-        <span class="tag">GLSL</span>
         <span class="tag">SPIRV-Cross</span>
-        <span class="tag">CUDA</span>
-        <span class="tag">gsplat</span>
-        <span class="tag">3DGS</span>
-        <span class="tag">PyTorch</span>
-        <span class="tag">TensorFlow</span>
-        <span class="tag">OpenCV</span>
         <span class="tag">CMake</span>
-        <span class="tag">ECS</span>
-        <span class="tag">DGX Spark</span>
+        <span class="tag">pthreads</span>
       </div>
     </div>
   </div>
@@ -161,21 +141,36 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 .section-heading { margin-bottom: 0.5rem; }
 .section-sub { margin-bottom: 2.5rem; font-size: 1rem; }
 
-.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; }
-.card-link { text-decoration: none; display: block; position: relative; }
-.card-link h3 { color: var(--text); margin: 0.75rem 0 0.5rem; }
-.card-link p { font-size: 0.9rem; }
-.card-icon { font-size: 1.4rem; color: var(--orange); }
-.card-arrow { position: absolute; bottom: 1.5rem; right: 1.5rem; color: var(--orange); font-size: 1.1rem; opacity: 0; transition: opacity 0.2s; }
-.card-link:hover .card-arrow { opacity: 1; }
+.categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
 
-.about-strip { display: flex; gap: 4rem; align-items: flex-start; }
-.about-text { flex: 1; }
-.about-text h2 { margin-bottom: 0; }
+.cat-card { text-decoration: none; display: block; position: relative; }
+.cat-count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--orange-light);
+  background: var(--orange-tint);
+  border: 1px solid var(--orange-dark);
+  border-radius: 100px;
+  padding: 2px 8px;
+  display: inline-block;
+  margin-bottom: 0.6rem;
+}
+.cat-card h3 { color: var(--text); margin-bottom: 0.4rem; font-size: 1rem; }
+.cat-card p  { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+.card-arrow { position: absolute; bottom: 1.5rem; right: 1.5rem; color: var(--orange); font-size: 1.1rem; opacity: 0; transition: opacity 0.2s; }
+.cat-card:hover .card-arrow { opacity: 1; }
+
+.engine-strip { display: flex; gap: 4rem; align-items: flex-start; }
+.engine-text { flex: 1; }
+.engine-text h2 { margin-bottom: 0; }
 .tech-stack { display: flex; flex-wrap: wrap; gap: 0.5rem; align-content: flex-start; max-width: 280px; padding-top: 0.5rem; }
 
 @media (max-width: 768px) {
-  .about-strip { flex-direction: column; }
+  .engine-strip { flex-direction: column; }
   .tech-stack { max-width: 100%; }
   .stats-row { flex-wrap: wrap; justify-content: center; }
   .stat-div { display: none; }
