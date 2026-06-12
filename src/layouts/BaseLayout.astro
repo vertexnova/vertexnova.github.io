@@ -28,7 +28,12 @@ const nav = [
     </a>
     <nav class="site-nav">
       {nav.map(n => (
-        <a href={n.href} class={`nav-link ${path === n.href || (n.href !== '/' && path.startsWith(n.href)) ? 'active' : ''}`}>
+        <a
+          href={n.href}
+          class={`nav-link ${!n.external && (path === n.href || (n.href !== '/' && path.startsWith(n.href))) ? 'active' : ''}`}
+          target={n.external ? '_blank' : undefined}
+          rel={n.external ? 'noopener noreferrer' : undefined}
+        >
           {n.label}
         </a>
       ))}
@@ -55,23 +60,22 @@ const nav = [
     </div>
     <div class="footer-links">
       <div>
-        <span class="footer-col-title">Project</span>
-        <a href="https://github.com/vertexnova" target="_blank">GitHub</a>
-        <a href="https://learnvertexnova.com" target="_blank">Docs site</a>
-        <a href="/engine">Engine</a>
+        <span class="footer-col-title">Samples</span>
+        <a href="/samples">Explorer</a>
+        <a href="/samples/support">Browser support</a>
+        <a href="https://github.com/vertexnova/vertexnova.github.io/issues/new?template=webgpu-sample-bug.yml" target="_blank">Report a bug</a>
       </div>
       <div>
-        <span class="footer-col-title">Content</span>
-        <a href="/setup">Setup guides</a>
-        <a href="/notes">Notes</a>
-        <a href="/research">Research</a>
-        <a href="/blog">Blog</a>
+        <span class="footer-col-title">Engine</span>
+        <a href="https://github.com/vertexnova/vnerhi" target="_blank">vnerhi source ↗</a>
+        <a href="https://learnvertexnova.com" target="_blank">Docs ↗</a>
+        <a href="https://ajeetsinghyadav.github.io/engine" target="_blank">Engine overview ↗</a>
       </div>
       <div>
         <span class="footer-col-title">Connect</span>
-        <a href="https://linkedin.com/in/ajeet-yadav-b1133991" target="_blank">LinkedIn</a>
-        <a href="https://github.com/ajeetsinghyadav" target="_blank">GitHub</a>
-        <a href="/about">About</a>
+        <a href="https://github.com/vertexnova" target="_blank">GitHub ↗</a>
+        <a href="https://ajeetsinghyadav.github.io" target="_blank">Ajeet's site ↗</a>
+        <a href="https://linkedin.com/in/ajeet-yadav-b1133991" target="_blank">LinkedIn ↗</a>
       </div>
     </div>
   </div>

@@ -2,56 +2,57 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { SAMPLE_GROUPS, DEFAULT_SAMPLE_SLUG } from '../../data/samples';
 
-// Serialise catalog for client-side JS.
 const catalogJSON = JSON.stringify(
   SAMPLE_GROUPS.flatMap(g =>
     g.samples.map(s => ({ ...s, group: g.id, groupLabel: g.label }))
   )
 );
+const groupsJSON = JSON.stringify(
+  SAMPLE_GROUPS.map(g => ({ id: g.id, label: g.label }))
+);
 ---
 
 <BaseLayout
   title="WebGPU Samples"
-  description="Interactive WebGPU samples built with VertexNova — running live in the browser via WebAssembly."
+  description="Interactive WebGPU samples from the VertexNova rendering engine — live in the browser via WebAssembly."
 >
-  <!-- Cross-origin isolation required for SharedArrayBuffer / pthreads -->
+  <!-- COOP/COEP for SharedArrayBuffer (Emscripten pthreads) -->
   <script is:inline src="/coi-serviceworker.js"></script>
 
-  <div class="explorer">
+  <div class="shell">
 
-    <!-- ── Mobile top bar ─────────────────────────────────────────────── -->
-    <div class="mobile-bar">
-      <button class="menu-btn" id="menuBtn" aria-label="Toggle sample list">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <rect y="2"  width="18" height="2" rx="1" fill="currentColor"/>
-          <rect y="8"  width="18" height="2" rx="1" fill="currentColor"/>
-          <rect y="14" width="18" height="2" rx="1" fill="currentColor"/>
-        </svg>
-        <span id="menuLabel">Samples</span>
-      </button>
-      <span class="mobile-title" id="mobileSampleTitle">Select a sample</span>
-    </div>
+    <!-- ── Left panel ───────────────────────────────────────────────── -->
+    <nav class="panel" id="panel">
 
-    <!-- ── Sidebar ────────────────────────────────────────────────────── -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <span class="sidebar-heading">WebGPU Samples</span>
-        <a href="/samples/support" class="sidebar-support-link">Browser support ↗</a>
+      <div class="panel-head">
+        <a href="/" class="panel-logo">
+          <img src="/favicon.svg" alt="" width="16" height="16" />
+          <span>VertexNova</span>
+        </a>
+        <span class="panel-sub">WebGPU Samples</span>
       </div>
 
-      <nav class="sidebar-nav">
+      <div class="panel-search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="Filter samples…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <div class="sample-list" id="sampleList">
         {SAMPLE_GROUPS.map(group => (
-          <div class="nav-group">
-            <div class="nav-group-label">{group.label}</div>
-            <ul class="nav-group-list">
+          <div class="group" data-group={group.id}>
+            <div class="group-label">{group.label}</div>
+            <ul>
               {group.samples.map(s => (
                 <li>
-                  <a
-                    href={`#${s.slug}`}
-                    class="nav-item"
-                    data-slug={s.slug}
-                    aria-label={s.title}
-                  >
+                  <a href={`#${s.slug}`} class="sample-link" data-slug={s.slug}>
                     {s.title}
                   </a>
                 </li>
@@ -59,71 +60,66 @@ const catalogJSON = JSON.stringify(
             </ul>
           </div>
         ))}
-      </nav>
-    </aside>
+        <p class="no-results" id="noResults" hidden>No samples match.</p>
+      </div>
 
-    <!-- ── Overlay (mobile) ───────────────────────────────────────────── -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+      <div class="panel-footer">
+        <a href="/samples/support">Browser support</a>
+        <span class="divider-dot">·</span>
+        <a href="https://github.com/vertexnova/vnerhi" target="_blank" rel="noopener">GitHub</a>
+      </div>
 
-    <!-- ── Main panel ─────────────────────────────────────────────────── -->
-    <div class="panel" id="panel">
+      <!-- Mobile toggle -->
+      <button class="panel-close" id="panelClose" aria-label="Close panel">✕</button>
+    </nav>
 
-      <!-- Welcome / no-selection state -->
+    <!-- ── Main area ─────────────────────────────────────────────────── -->
+    <div class="main" id="main">
+
+      <!-- Mobile header -->
+      <div class="mobile-header">
+        <button class="menu-btn" id="menuBtn" aria-label="Open sample list">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+            <rect y="2" width="18" height="2" rx="1"/>
+            <rect y="8" width="18" height="2" rx="1"/>
+            <rect y="14" width="18" height="2" rx="1"/>
+          </svg>
+        </button>
+        <span class="mobile-sample-name" id="mobileName">Select a sample</span>
+      </div>
+
+      <!-- Welcome (no sample selected) -->
       <div class="welcome" id="welcome">
         <div class="welcome-inner">
-          <div class="welcome-icon">◈</div>
+          <div class="welcome-glyph">◈</div>
           <h2>WebGPU Samples</h2>
           <p>
-            Select a sample from the list to launch it. Each demo runs live in the
-            browser using WebAssembly compiled from C++20 with Emscripten.
+            Select a sample from the list to run it live.<br />
+            Each demo is compiled from C++20 to WebAssembly with Emscripten.
           </p>
-          <div class="welcome-pills">
-            <span class="pill orange">WebGPU</span>
-            <span class="pill">WebAssembly</span>
-            <span class="pill">C++20</span>
-            <span class="pill">Emscripten</span>
-          </div>
-          <a href="/samples/support" class="btn btn-ghost" style="margin-top:1.5rem">
-            Check browser support →
-          </a>
+          <a href="/samples/support" class="support-link">Check browser support →</a>
         </div>
       </div>
 
-      <!-- Active sample view -->
+      <!-- Sample view -->
       <div class="sample-view" id="sampleView" hidden>
 
-        <!-- Info bar -->
-        <div class="info-bar">
+        <div class="sample-info" id="sampleInfo">
           <div class="info-left">
-            <span class="info-group-badge" id="infoGroupBadge"></span>
-            <h1 class="info-title" id="infoTitle"></h1>
-            <p class="info-desc" id="infoDesc"></p>
-          </div>
-          <div class="info-actions">
-            <a
-              id="reportBtn"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="btn btn-ghost btn-sm report-btn"
-            >
-              Report issue ↗
-            </a>
-            <a
-              id="openFullBtn"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="btn btn-ghost btn-sm"
-            >
-              Open full screen ↗
-            </a>
+            <h1 id="infoTitle"></h1>
+            <div class="info-links">
+              <a id="srcLink" href="#" target="_blank" rel="noopener">View source ↗</a>
+              <span class="sep">—</span>
+              <a id="standaloneLink" href="#" target="_blank" rel="noopener">Open standalone ↗</a>
+              <span class="sep">—</span>
+              <a id="reportLink" href="#" target="_blank" rel="noopener">Report issue ↗</a>
+            </div>
+            <p id="infoDesc"></p>
           </div>
         </div>
 
-        <!-- Canvas area with padding -->
-        <div class="canvas-wrap">
-          <div class="canvas-frame">
+        <div class="frame-wrap">
+          <div class="frame-border" id="frameBorder">
             <iframe
               id="sampleFrame"
               src=""
@@ -131,233 +127,234 @@ const catalogJSON = JSON.stringify(
               allow="cross-origin-isolated"
             ></iframe>
 
-            <!-- Overlay shown while sample is loading -->
-            <div class="frame-loading" id="frameLoading">
-              <div class="loading-spinner"></div>
-              <span>Loading sample…</span>
+            <div class="overlay loading" id="overlayLoading">
+              <div class="spinner"></div>
+              <span>Loading…</span>
             </div>
 
-            <!-- Overlay shown when sample isn't deployed yet -->
-            <div class="frame-unavailable" id="frameUnavailable" hidden>
-              <div class="unavailable-icon">⚠</div>
-              <p>Sample not yet deployed to the web.</p>
-              <p class="unavailable-hint">
-                Run locally with
-                <code>./scripts/build_wasm.sh --serve</code> in the
-                <a href="https://github.com/vertexnova/vnerhi" target="_blank" rel="noopener">vnerhi</a>
-                repository.
+            <div class="overlay unavailable" id="overlayUnavail" hidden>
+              <span class="warn-icon">⚠</span>
+              <p>Sample not yet deployed.</p>
+              <p class="hint">
+                Run locally:&nbsp;
+                <code>./scripts/build_wasm.sh --serve</code>
               </p>
             </div>
           </div>
         </div>
 
-        <!-- Footer note -->
-        <div class="canvas-note">
-          <span>
-            Requires a WebGPU-capable browser —
-            <a href="/samples/support">check support ↗</a>
-          </span>
-        </div>
-
       </div>
     </div>
+
+    <!-- Mobile overlay -->
+    <div class="panel-overlay" id="panelOverlay"></div>
   </div>
 </BaseLayout>
 
 <style>
-/* ── Layout ──────────────────────────────────────────────────────────────── */
-.explorer {
+/* ── Reset the BaseLayout <main> padding for this full-height page ── */
+:global(main) {
+  padding: 0 !important;
+}
+
+/* ── Shell ──────────────────────────────────────────────────────────── */
+.shell {
   display: flex;
-  height: calc(100vh - 60px); /* 60px = site header */
+  height: calc(100vh - 60px);   /* 60px = site nav */
   overflow: hidden;
-  position: relative;
+  font-family: var(--font-mono);
 }
 
-/* ── Mobile bar ──────────────────────────────────────────────────────────── */
-.mobile-bar {
-  display: none;
-  position: fixed;
-  top: 60px;
-  left: 0;
-  right: 0;
-  z-index: 50;
-  height: 48px;
+/* ── Left panel ─────────────────────────────────────────────────────── */
+.panel {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--panel);
-  border-bottom: 1px solid var(--border);
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0 1rem;
+  border-right: 1px solid var(--border);
+  overflow: hidden;
 }
 
-.menu-btn {
+.panel-head {
+  padding: 1rem 1rem 0.6rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.panel-logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  margin-bottom: 2px;
+}
+.panel-logo:hover { color: var(--orange-light); }
+.panel-logo img { opacity: 0.85; }
+
+.panel-sub {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+/* Search */
+.panel-search {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.panel-search svg { color: var(--muted); flex-shrink: 0; }
+
+#searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text);
+  min-width: 0;
+}
+#searchInput::placeholder { color: var(--muted); }
+
+/* Sample list */
+.sample-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0 1rem;
+  overscroll-behavior: contain;
+}
+
+.group { margin-bottom: 0.25rem; }
+
+.group-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  padding: 0.6rem 1rem 0.25rem;
+  font-weight: 600;
+}
+
+.group ul { list-style: none; padding: 0; margin: 0; }
+
+.sample-link {
+  display: block;
+  padding: 0.3rem 1rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  transition: color 0.1s, background 0.1s, border-color 0.1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sample-link:hover {
+  color: var(--text);
+  background: var(--panel-mid);
+}
+.sample-link.active {
+  color: var(--orange-light);
+  border-left-color: var(--orange);
+  background: var(--orange-tint);
+}
+
+.group[hidden] { display: none; }
+.no-results {
+  font-size: 0.78rem;
+  color: var(--muted);
+  padding: 0.75rem 1rem;
+  margin: 0;
+}
+
+/* Panel footer */
+.panel-footer {
+  flex-shrink: 0;
+  padding: 0.6rem 1rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.72rem;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.panel-footer a { color: var(--muted); }
+.panel-footer a:hover { color: var(--orange-light); }
+.divider-dot { color: var(--border); }
+
+.panel-close { display: none; }
+
+/* ── Main area ──────────────────────────────────────────────────────── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+  background: var(--bg);
+}
+
+/* Mobile header */
+.mobile-header {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1rem;
+  height: 44px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  flex-shrink: 0;
+}
+
+.menu-btn {
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  padding: 5px 10px;
-  font-size: 0.8rem;
+  border-radius: 5px;
+  color: var(--muted);
+  padding: 4px 8px;
   cursor: pointer;
-  font-family: var(--font-sans);
-  white-space: nowrap;
-  flex-shrink: 0;
+  display: flex;
+  align-items: center;
 }
 .menu-btn:hover { border-color: var(--orange); color: var(--orange-light); }
 
-.mobile-title {
-  font-size: 0.82rem;
+.mobile-sample-name {
+  font-size: 0.8rem;
   color: var(--muted);
+  font-family: var(--font-mono);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* ── Sidebar ─────────────────────────────────────────────────────────────── */
-.sidebar {
-  width: 272px;
-  flex-shrink: 0;
-  background: var(--panel);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-
-.sidebar-header {
-  padding: 1rem 1.25rem 0.75rem;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-  flex-shrink: 0;
-}
-
-.sidebar-heading {
-  font-size: 0.72rem;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  font-weight: 500;
-}
-
-.sidebar-support-link {
-  font-size: 0.72rem;
-  color: var(--muted);
-  white-space: nowrap;
-}
-.sidebar-support-link:hover { color: var(--orange-light); }
-
-.sidebar-nav {
-  padding: 0.75rem 0 2rem;
-  flex: 1;
-}
-
-.nav-group { margin-bottom: 0.25rem; }
-
-.nav-group-label {
-  font-size: 0.68rem;
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  padding: 0.75rem 1.25rem 0.3rem;
-  font-weight: 600;
-}
-
-.nav-group-list { list-style: none; padding: 0; margin: 0; }
-
-.nav-item {
-  display: block;
-  padding: 0.45rem 1.25rem;
-  font-size: 0.875rem;
-  color: var(--muted);
-  border-left: 2px solid transparent;
-  transition: color 0.12s, background 0.12s, border-color 0.12s;
-  text-decoration: none;
-  line-height: 1.4;
-}
-.nav-item:hover {
-  color: var(--text);
-  background: color-mix(in srgb, var(--panel-mid) 60%, transparent);
-}
-.nav-item.active {
-  color: var(--orange-light);
-  border-left-color: var(--orange);
-  background: var(--orange-tint);
-  font-weight: 500;
-}
-
-/* ── Sidebar overlay (mobile) ────────────────────────────────────────────── */
-.sidebar-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 39;
-  background: rgba(0,0,0,0.55);
-}
-.sidebar-overlay.visible { display: block; }
-
-/* ── Panel ───────────────────────────────────────────────────────────────── */
-.panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: var(--bg);
-  min-width: 0;
-}
-
-/* ── Welcome state ───────────────────────────────────────────────────────── */
+/* Welcome */
 .welcome {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
-}
-
-.welcome-inner {
-  max-width: 420px;
   text-align: center;
-}
-
-.welcome-icon {
-  font-size: 2.5rem;
-  color: var(--orange);
-  margin-bottom: 1rem;
-}
-
-.welcome-inner h2 { margin-bottom: 0.75rem; }
-.welcome-inner p  { font-size: 0.95rem; margin-bottom: 1.25rem; }
-
-.welcome-pills {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.4rem;
-}
-
-.pill {
+  padding: 2rem;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  padding: 3px 10px;
-  border-radius: 100px;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  background: var(--panel);
-}
-.pill.orange {
-  border-color: var(--orange-dark);
-  color: var(--orange-light);
-  background: var(--orange-tint);
 }
 
-/* ── Sample view ─────────────────────────────────────────────────────────── */
+.welcome-inner { max-width: 380px; }
+.welcome-glyph { font-size: 2.5rem; color: var(--orange); margin-bottom: 1rem; }
+.welcome-inner h2 { font-family: var(--font-mono); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text); }
+.welcome-inner p  { font-size: 0.82rem; color: var(--muted); line-height: 1.7; margin-bottom: 1rem; }
+.support-link { font-size: 0.78rem; color: var(--orange-light); }
+.support-link:hover { color: var(--orange); }
+
+/* Sample view */
 .sample-view {
   flex: 1;
   display: flex;
@@ -367,85 +364,60 @@ const catalogJSON = JSON.stringify(
 }
 
 /* Info bar */
-.info-bar {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.5rem;
-  padding: 1.25rem 1.75rem 1rem;
+.sample-info {
+  flex-shrink: 0;
+  padding: 0.75rem 1.25rem 0.6rem;
   border-bottom: 1px solid var(--border);
   background: var(--panel);
-  flex-shrink: 0;
 }
 
-.info-left { flex: 1; min-width: 0; }
-
-.info-group-badge {
-  display: inline-block;
+#infoTitle {
   font-family: var(--font-mono);
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 2px 8px;
-  border-radius: 100px;
-  border: 1px solid var(--orange-dark);
-  color: var(--orange-light);
-  background: var(--orange-tint);
-  margin-bottom: 0.45rem;
-}
-
-.info-title {
-  font-size: 1.25rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text);
-  margin: 0 0 0.35rem;
-  letter-spacing: -0.01em;
+  margin: 0 0 0.3rem;
 }
 
-.info-desc {
-  font-size: 0.875rem;
+.info-links {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.4rem;
+}
+.info-links a { color: var(--orange-light); }
+.info-links a:hover { color: var(--orange); text-decoration: underline; }
+.sep { color: var(--border); }
+
+#infoDesc {
+  font-size: 0.78rem;
   color: var(--muted);
   line-height: 1.6;
   margin: 0;
-  max-width: 640px;
+  font-family: var(--font-sans);
 }
 
-.info-actions {
-  display: flex;
-  gap: 0.5rem;
-  flex-shrink: 0;
-  align-items: flex-start;
-  padding-top: 0.15rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.btn-sm { padding: 6px 14px; font-size: 0.8rem; }
-
-.report-btn { color: var(--muted); }
-.report-btn:hover { color: var(--orange-light); border-color: var(--orange); }
-
-/* Canvas area */
-.canvas-wrap {
+/* Frame */
+.frame-wrap {
   flex: 1;
-  padding: 1.25rem 1.75rem;
+  padding: 1rem 1.25rem;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
 }
 
-.canvas-frame {
+.frame-border {
   flex: 1;
   position: relative;
-  border-radius: var(--radius-lg);
   border: 1px solid var(--border);
+  border-radius: 8px;
   overflow: hidden;
   background: #000;
   min-height: 0;
 }
 
-/* The inner iframe fills the frame entirely */
 #sampleFrame {
   position: absolute;
   inset: 0;
@@ -455,35 +427,8 @@ const catalogJSON = JSON.stringify(
   display: block;
 }
 
-/* Loading overlay */
-.frame-loading {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  background: #0d0d0d;
-  color: var(--muted);
-  font-size: 0.85rem;
-  font-family: var(--font-mono);
-  pointer-events: none;
-}
-
-.loading-spinner {
-  width: 28px;
-  height: 28px;
-  border: 2px solid var(--border);
-  border-top-color: var(--orange);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* Unavailable overlay */
-.frame-unavailable {
+/* Overlays */
+.overlay {
   position: absolute;
   inset: 0;
   display: flex;
@@ -491,199 +436,207 @@ const catalogJSON = JSON.stringify(
   align-items: center;
   justify-content: center;
   gap: 0.6rem;
-  background: #0d0d0d;
+  background: #0a0a0a;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
   color: var(--muted);
-  font-size: 0.875rem;
   text-align: center;
   padding: 2rem;
 }
+.overlay[hidden] { display: none; }
 
-.unavailable-icon {
-  font-size: 2rem;
-  color: var(--orange-dark);
-  margin-bottom: 0.25rem;
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-top-color: var(--orange);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.frame-unavailable p { margin: 0; line-height: 1.6; }
-.frame-unavailable a { color: var(--orange-light); }
+.warn-icon { font-size: 1.5rem; color: var(--orange-dark); }
+.overlay p { margin: 0; line-height: 1.6; }
+.overlay .hint { font-size: 0.72rem; margin-top: 0.25rem !important; }
 
-.unavailable-hint {
-  font-size: 0.8rem;
-  color: var(--muted);
-  max-width: 360px;
-  margin-top: 0.25rem !important;
+/* Mobile overlay backdrop */
+.panel-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  background: rgba(0,0,0,0.6);
 }
+.panel-overlay.visible { display: block; }
 
-/* Bottom note */
-.canvas-note {
-  padding: 0.5rem 1.75rem 0.75rem;
-  font-size: 0.75rem;
-  color: var(--muted);
-  flex-shrink: 0;
-}
-.canvas-note a { color: var(--orange-light); }
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .shell { height: calc(100vh - 60px); }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .explorer {
-    flex-direction: column;
-    height: calc(100vh - 60px - 48px); /* account for mobile bar */
-    margin-top: 48px;
-  }
-
-  .mobile-bar { display: flex; }
-
-  .sidebar {
+  .panel {
     position: fixed;
     top: 60px;
     left: 0;
     bottom: 0;
     z-index: 40;
-    width: min(300px, 88vw);
+    width: min(290px, 86vw);
     transform: translateX(-100%);
-    transition: transform 0.25s ease;
-    border-right-color: var(--border);
+    transition: transform 0.22s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.4);
   }
-  .sidebar.open { transform: translateX(0); }
+  .panel.open { transform: translateX(0); }
 
-  .info-bar {
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
+  .panel-close {
+    display: block;
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    padding: 2px 7px;
+    cursor: pointer;
+    font-family: var(--font-mono);
   }
-  .info-actions { justify-content: flex-start; }
 
-  .canvas-wrap { padding: 0.75rem 1rem; }
-  .canvas-note { padding: 0.4rem 1rem 0.6rem; }
+  .mobile-header { display: flex; }
+
+  .frame-wrap { padding: 0.6rem; }
+  .sample-info { padding: 0.6rem 0.75rem 0.5rem; }
 }
 </style>
 
-<script define:vars={{ catalogJSON, DEFAULT_SAMPLE_SLUG }}>
+<script define:vars={{ catalogJSON, groupsJSON, DEFAULT_SAMPLE_SLUG }}>
 const catalog = JSON.parse(catalogJSON);
 
-// ── DOM refs ────────────────────────────────────────────────────────────────
-const welcome         = document.getElementById('welcome');
-const sampleView      = document.getElementById('sampleView');
-const sampleFrame     = document.getElementById('sampleFrame');
-const frameLoading    = document.getElementById('frameLoading');
-const frameUnavail    = document.getElementById('frameUnavailable');
-const infoTitle       = document.getElementById('infoTitle');
-const infoDesc        = document.getElementById('infoDesc');
-const infoGroupBadge  = document.getElementById('infoGroupBadge');
-const reportBtn       = document.getElementById('reportBtn');
-const openFullBtn     = document.getElementById('openFullBtn');
-const mobileSampleTitle = document.getElementById('mobileSampleTitle');
+// ── DOM ────────────────────────────────────────────────────────────────
+const panel          = document.getElementById('panel');
+const panelOverlay   = document.getElementById('panelOverlay');
+const panelClose     = document.getElementById('panelClose');
+const menuBtn        = document.getElementById('menuBtn');
+const welcome        = document.getElementById('welcome');
+const sampleView     = document.getElementById('sampleView');
+const sampleFrame    = document.getElementById('sampleFrame');
+const overlayLoading = document.getElementById('overlayLoading');
+const overlayUnavail = document.getElementById('overlayUnavail');
+const infoTitle      = document.getElementById('infoTitle');
+const infoDesc       = document.getElementById('infoDesc');
+const srcLink        = document.getElementById('srcLink');
+const standaloneLink = document.getElementById('standaloneLink');
+const reportLink     = document.getElementById('reportLink');
+const mobileName     = document.getElementById('mobileName');
+const searchInput    = document.getElementById('searchInput');
+const noResults      = document.getElementById('noResults');
 
-// ── Sidebar toggle (mobile) ─────────────────────────────────────────────────
-const menuBtn      = document.getElementById('menuBtn');
-const sidebar      = document.getElementById('sidebar');
-const overlay      = document.getElementById('sidebarOverlay');
-
-function openSidebar() {
-  sidebar.classList.add('open');
-  overlay.classList.add('visible');
+// ── Mobile sidebar ─────────────────────────────────────────────────────
+function openPanel() {
+  panel.classList.add('open');
+  panelOverlay.classList.add('visible');
   document.body.style.overflow = 'hidden';
 }
-function closeSidebar() {
-  sidebar.classList.remove('open');
-  overlay.classList.remove('visible');
+function closePanel() {
+  panel.classList.remove('open');
+  panelOverlay.classList.remove('visible');
   document.body.style.overflow = '';
 }
+menuBtn?.addEventListener('click', openPanel);
+panelClose?.addEventListener('click', closePanel);
+panelOverlay?.addEventListener('click', closePanel);
 
-menuBtn?.addEventListener('click', () =>
-  sidebar.classList.contains('open') ? closeSidebar() : openSidebar()
-);
-overlay?.addEventListener('click', closeSidebar);
+// ── Search / filter ────────────────────────────────────────────────────
+searchInput?.addEventListener('input', () => {
+  const q = searchInput.value.trim().toLowerCase();
+  let anyVisible = false;
 
-// ── Sample selection ────────────────────────────────────────────────────────
-function slugFromHash() {
-  const h = window.location.hash.slice(1);
-  return h || null;
-}
+  document.querySelectorAll('.group').forEach(groupEl => {
+    const links = groupEl.querySelectorAll('.sample-link');
+    let groupVisible = false;
+    links.forEach(link => {
+      const match = !q || link.textContent.toLowerCase().includes(q);
+      link.parentElement.hidden = !match;
+      if (match) groupVisible = true;
+    });
+    groupEl.hidden = !groupVisible;
+    if (groupVisible) anyVisible = true;
+  });
 
+  noResults.hidden = anyVisible;
+});
+
+// ── Sample selection ───────────────────────────────────────────────────
 function selectSample(slug) {
-  const sample = catalog.find(s => s.slug === slug);
-  if (!sample) return;
+  const s = catalog.find(x => x.slug === slug);
+  if (!s) return;
 
-  // Update URL without reloading.
   if (window.location.hash !== `#${slug}`) {
     history.pushState(null, '', `#${slug}`);
   }
 
-  // Update sidebar active state.
-  document.querySelectorAll('.nav-item').forEach(el => {
+  // Sidebar active state
+  document.querySelectorAll('.sample-link').forEach(el => {
     el.classList.toggle('active', el.dataset.slug === slug);
   });
 
-  // Update info bar.
-  infoTitle.textContent       = sample.title;
-  infoDesc.textContent        = sample.description;
-  infoGroupBadge.textContent  = sample.groupLabel;
-  mobileSampleTitle.textContent = sample.title;
+  // Info bar
+  infoTitle.textContent   = s.title;
+  infoDesc.textContent    = s.description;
+  mobileName.textContent  = s.title;
 
-  // Build report URL with pre-filled sample name.
-  const issueUrl = new URL(
-    'https://github.com/vertexnova/vertexnova.github.io/issues/new'
-  );
+  // Links
+  const wasmPath = `/samples/wasm/${s.target}/${s.target}.html`;
+  standaloneLink.href = wasmPath;
+
+  srcLink.href = `https://github.com/vertexnova/vnerhi/tree/main/samples/${s.target}`;
+
+  const issueUrl = new URL('https://github.com/vertexnova/vertexnova.github.io/issues/new');
   issueUrl.searchParams.set('template', 'webgpu-sample-bug.yml');
-  issueUrl.searchParams.set('title', `[WebGPU Sample] ${sample.title}`);
-  reportBtn.href = issueUrl.toString();
+  issueUrl.searchParams.set('title', `[WebGPU Sample] ${s.title}`);
+  reportLink.href = issueUrl.toString();
 
-  // WASM page path — served from /samples/wasm/{target}/{target}.html
-  const wasmPath = `/samples/wasm/${sample.target}/${sample.target}.html`;
-  openFullBtn.href = wasmPath;
-
-  // Show sample view, hide welcome.
+  // Show sample view
   welcome.style.display   = 'none';
   sampleView.hidden       = false;
 
-  // Show loading state while iframe loads.
-  frameLoading.style.display  = 'flex';
-  frameUnavail.hidden         = true;
-  sampleFrame.src             = '';
+  // Reset frame state
+  overlayLoading.hidden   = false;
+  overlayUnavail.hidden   = true;
+  sampleFrame.src         = '';
 
-  // Small delay so the loading indicator is visible before the heavy iframe.
-  requestAnimationFrame(() => {
-    sampleFrame.src = wasmPath;
-  });
+  requestAnimationFrame(() => { sampleFrame.src = wasmPath; });
 
-  // Close mobile sidebar after selection.
-  closeSidebar();
+  closePanel();
 }
 
-// Hide loading overlay once iframe content has loaded.
 sampleFrame?.addEventListener('load', () => {
-  frameLoading.style.display = 'none';
-  // Heuristic: if the iframe lands on a 404-ish empty page, show unavailable.
+  overlayLoading.hidden = true;
   try {
-    const iframeDoc = sampleFrame.contentDocument;
-    if (iframeDoc && iframeDoc.title === '' && iframeDoc.body?.children.length === 0) {
-      frameUnavail.hidden = false;
+    const doc = sampleFrame.contentDocument;
+    if (doc && doc.title === '' && doc.body?.children.length === 0) {
+      overlayUnavail.hidden = false;
     }
-  } catch (_) {
-    // Cross-origin frames throw; if we can't inspect, trust the load event.
-  }
+  } catch (_) { /* cross-origin — trust the load */ }
 });
 
 sampleFrame?.addEventListener('error', () => {
-  frameLoading.style.display = 'none';
-  frameUnavail.hidden = false;
+  overlayLoading.hidden = true;
+  overlayUnavail.hidden = false;
 });
 
-// ── Nav link clicks ─────────────────────────────────────────────────────────
-document.querySelectorAll('.nav-item').forEach(el => {
-  el.addEventListener('click', (e) => {
+// ── Nav link clicks ────────────────────────────────────────────────────
+document.querySelectorAll('.sample-link').forEach(el => {
+  el.addEventListener('click', e => {
     e.preventDefault();
     selectSample(el.dataset.slug);
   });
 });
 
-// ── Initial load & back/forward ─────────────────────────────────────────────
+// ── Hash routing ───────────────────────────────────────────────────────
 function handleHash() {
-  const slug = slugFromHash() || DEFAULT_SAMPLE_SLUG;
+  const slug = window.location.hash.slice(1) || DEFAULT_SAMPLE_SLUG;
   selectSample(slug);
 }
-
 window.addEventListener('popstate', handleHash);
 handleHash();
 </script>
