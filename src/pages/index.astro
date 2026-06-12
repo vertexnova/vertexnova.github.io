@@ -164,13 +164,15 @@ const catalogJSON = JSON.stringify(
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 0.88rem;
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
   color: var(--text);
   margin-bottom: 5px;
 }
 .site-title img { opacity: 0.9; flex-shrink: 0; }
 .site-subtitle {
+  font-family: var(--font-sans);
   font-weight: 400;
   color: var(--muted);
   font-size: 0.82rem;
@@ -202,8 +204,8 @@ const catalogJSON = JSON.stringify(
   background: transparent;
   border: none;
   outline: none;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
+  font-family: var(--font-sans);
+  font-size: 0.83rem;
   color: var(--text);
   min-width: 0;
 }
@@ -219,25 +221,31 @@ const catalogJSON = JSON.stringify(
 .sample-list::-webkit-scrollbar { width: 3px; }
 .sample-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-.group { margin-bottom: 0.1rem; }
+.group { margin-bottom: 0.25rem; }
 .group[hidden] { display: none; }
 
+/* Separator line between groups */
+.group + .group .group-label {
+  border-top: 1px solid var(--border);
+}
+
 .group-label {
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
-  padding: 0.55rem 1rem 0.2rem;
-  font-weight: 600;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--orange-light);
+  padding: 0.85rem 1rem 0.3rem;
 }
 
 .group ul { list-style: none; padding: 0; margin: 0; }
 
 .sample-link {
   display: block;
-  padding: 0.28rem 1rem;
-  font-size: 0.8rem;
-  color: var(--muted);
+  padding: 0.32rem 1rem;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  color: #AEAEB2;
   text-decoration: none;
   border-left: 2px solid transparent;
   transition: color 0.1s, background 0.1s, border-color 0.1s;
@@ -253,6 +261,7 @@ const catalogJSON = JSON.stringify(
   color: var(--orange-light);
   border-left-color: var(--orange);
   background: var(--orange-tint);
+  font-weight: 500;
 }
 
 .no-results {
@@ -313,31 +322,39 @@ const catalogJSON = JSON.stringify(
   text-align: center;
   padding: 2rem;
 }
-.welcome-inner { max-width: 360px; font-family: var(--font-mono); }
+.welcome-inner { max-width: 380px; }
 .welcome-mark {
-  font-size: 2.2rem;
+  font-size: 2.4rem;
   color: var(--orange);
-  margin-bottom: 1rem;
-  opacity: 0.8;
+  margin-bottom: 1.1rem;
+  opacity: 0.85;
 }
 .welcome-inner h2 {
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-size: 1.35rem;
+  font-weight: 700;
   color: var(--text);
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
 }
 .welcome-inner p {
-  font-size: 0.78rem;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
   color: var(--muted);
   line-height: 1.7;
   margin-bottom: 0.4rem;
 }
-.welcome-hint { font-size: 0.72rem !important; }
+.welcome-hint {
+  font-family: var(--font-mono);
+  font-size: 0.78rem !important;
+  color: #6E6E73;
+}
 .support-cta {
   display: inline-block;
-  margin-top: 1rem;
-  font-size: 0.75rem;
+  margin-top: 1.1rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--orange-light);
 }
 .support-cta:hover { color: var(--orange); }
@@ -354,7 +371,7 @@ const catalogJSON = JSON.stringify(
 /* Info bar */
 .info-bar {
   flex-shrink: 0;
-  padding: 0.55rem 1.1rem 0.45rem;
+  padding: 0.7rem 1.25rem 0.6rem;
   border-bottom: 1px solid var(--border);
   background: var(--panel);
 }
@@ -365,27 +382,28 @@ const catalogJSON = JSON.stringify(
   flex-wrap: wrap;
 }
 .info-title {
-  font-family: var(--font-mono);
-  font-size: 0.88rem;
-  font-weight: 500;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--text);
+  letter-spacing: -0.01em;
 }
 .info-links {
   display: flex;
   align-items: center;
   gap: 0.35rem;
   font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.72rem;
 }
 .info-links a { color: var(--muted); }
 .info-links a:hover { color: var(--orange-light); }
 .sep { color: var(--border); }
 .info-desc {
-  font-size: 0.75rem;
-  color: var(--muted);
-  line-height: 1.5;
-  margin-top: 0.25rem;
   font-family: var(--font-sans);
+  font-size: 0.83rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-top: 0.3rem;
 }
 
 /* Frame */
