@@ -1,0 +1,129 @@
+name: WebGPU Sample Bug
+description: Report a rendering issue, crash, or failure in one of the live WebGPU samples.
+title: "[WebGPU Sample] "
+labels: ["bug", "webgpu-sample"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue with the WebGPU samples.
+        Please fill in as much detail as possible — browser version and GPU are especially important.
+
+  - type: dropdown
+    id: sample
+    attributes:
+      label: Sample name
+      description: Which sample is affected?
+      options:
+        - Window (00_window)
+        - Triangle (01_triangle)
+        - Cube (02_cube)
+        - MSAA (03_msaa)
+        - Texturing (04_texturing)
+        - Fractal Cube (05_fractal_cube)
+        - Cubemap (06_cubemap)
+        - Two Cubes (07_two_cubes)
+        - Instancing (08_instancing)
+        - Teapot (09_teapot)
+        - ImGui Overlay (10_imgui_overlay)
+        - ImGui Panel (11_imgui_panel)
+        - Lighting (12_lighting)
+        - Camera Controller (13_camera_controller)
+        - Depth Precision (14_depth_precision)
+        - Sampler Parameters (15_sampler_parameters)
+        - Stencil Testing (16_stencil_testing)
+        - Blending (17_blending)
+        - Texture Mipmap (18_texture_mipmap)
+        - Compute (19_compute)
+        - Compute to Render (20_compute_to_render)
+        - Teapot Normals (21_teapot_normals)
+        - Wireframe (22_wireframe)
+        - PBR Material (23_pbr_material)
+        - Normal Mapping (24_normal_mapping)
+        - Shadow Mapping (25_shadow_mapping)
+        - Deferred Shading (26_deferred_shading)
+        - HDR (27_hdr)
+        - GPU Debug (28_gpu_debug)
+        - Line Rendering (31_line_rendering)
+        - Text Rendering (32_text_rendering)
+        - Volume Rendering (33_volume_rendering)
+        - Volume Windowing (34_volume_windowing)
+        - Picking (35_picking)
+        - Slice Rendering (36_slice_rendering)
+        - Point Rendering (37_point_rendering)
+        - OIT A-Buffer (38_oit_abuffer)
+        - OIT Dual Depth Peeling (39_oit_dual_depth_peeling)
+        - OIT Weighted Blended (40_oit_weighted_blended)
+        - glTF Viewer (43_gltf_viewer)
+        - Multiple samples
+        - All samples
+    validations:
+      required: true
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Issue type
+      options:
+        - Sample fails to load / blank screen
+        - Sample crashes or throws an error
+        - Incorrect rendering / visual artifact
+        - Performance issue (very slow / unresponsive)
+        - Controls or interaction not working
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the problem clearly. What did you see vs. what you expected?
+      placeholder: |
+        The triangle sample loads but the canvas stays black. No error in the console.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce the issue?
+      value: |
+        1. Open https://vertexnova.github.io/samples/
+        2. Click "..."
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Please fill in all fields you can.
+      value: |
+        - Browser name and version:
+        - Operating system:
+        - GPU (make and model if known):
+        - GPU driver version (optional):
+        - Device type: Desktop / Laptop / Mobile / Tablet
+    validations:
+      required: true
+
+  - type: textarea
+    id: console_output
+    attributes:
+      label: Browser console output
+      description: |
+        Open the browser developer tools (F12), go to the Console tab,
+        and paste any errors or warnings here.
+      render: text
+      placeholder: Paste console output here (or "no errors")
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Screenshots, screen recordings, or any other relevant information.
