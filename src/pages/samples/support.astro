@@ -1,11 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
+type SupportStatus = 'yes' | 'flag' | 'no' | 'partial' | '—';
 interface BrowserRow {
   browser: string;
-  desktop: 'yes' | 'flag' | 'no' | 'partial';
-  android: 'yes' | 'flag' | 'no' | 'partial' | '—';
-  ios: 'yes' | 'flag' | 'no' | 'partial' | '—';
+  desktop: SupportStatus;
+  android: SupportStatus;
+  ios: SupportStatus;
   notes: string;
 }
 
