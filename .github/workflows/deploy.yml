@@ -1,30 +1,106 @@
 name: Deploy to GitHub Pages
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      skip_wasm:
+        description: "Skip WASM restore (site-only deploy)"
+        type: boolean
+        default: false
+
 permissions:
   contents: read
   pages: write
   id-token: write
+  actions: read   # read artifacts from this same repo
+
 concurrency:
   group: pages
   cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # ── Restore WASM samples from artifact ────────────────────────────
+      # Downloads the latest "webgpu-samples-wasm" artifact that was
+      # produced by build-samples.yml. Uses only GITHUB_TOKEN — no PAT
+      # required because both workflows live in the same repo.
+      # A missing artifact is a soft warning; the site still deploys and
+      # shows the "not yet deployed" overlay on each sample.
+      - name: Restore WASM samples
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.skip_wasm) }}
+        run: |
+          python3 - <<'PY'
+          import json, os, sys, urllib.request, zipfile, tempfile, shutil
+
+          TOKEN = os.environ["GITHUB_TOKEN"]
+          REPO  = os.environ["GITHUB_REPOSITORY"]   # vertexnova/vertexnova.github.io
+          NAME  = "webgpu-samples-wasm"
+          DEST  = "public/wasm"
+
+          hdrs = {
+              "Authorization": f"Bearer {TOKEN}",
+              "Accept": "application/vnd.github.v3+json",
+          }
+
+          def api(path):
+              req = urllib.request.Request(f"https://api.github.com/{path}", headers=hdrs)
+              with urllib.request.urlopen(req) as r:
+                  return json.loads(r.read())
+
+          data = api(f"repos/{REPO}/actions/artifacts?name={NAME}&per_page=5")
+          arts = [a for a in data.get("artifacts", []) if not a.get("expired")]
+          if not arts:
+              print(f"::warning::No '{NAME}' artifact found — deploying without WASM samples.")
+              sys.exit(0)
+
+          art = arts[0]
+          mb  = art["size_in_bytes"] // 1024 // 1024
+          print(f"Restoring artifact: {art['name']}  id={art['id']}  size={mb} MB")
+
+          tmp = tempfile.mktemp(suffix=".zip")
+          req = urllib.request.Request(art["archive_download_url"], headers=hdrs)
+          try:
+              with urllib.request.urlopen(req) as r, open(tmp, "wb") as f:
+                  shutil.copyfileobj(r, f)
+              os.makedirs(DEST, exist_ok=True)
+              with zipfile.ZipFile(tmp) as zf:
+                  zf.extractall(DEST)
+              count = sum(1 for n in os.listdir(DEST) if n.endswith(".html"))
+              print(f"Restored {count} sample HTML files → {DEST}/")
+          finally:
+              if os.path.exists(tmp):
+                  os.remove(tmp)
+          PY
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Astro build ───────────────────────────────────────────────────
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
+
       - run: npm install
       - run: npx astro check
       - run: npm run build
+
+      - name: Deploy summary
+        run: |
+          W=$(find dist/wasm -name "*.html" 2>/dev/null | wc -l | tr -d ' ')
+          echo "## Deploy" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Trigger: \`${{ github.event_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- WASM samples: **${W:-0}**" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist/
+
   deploy:
     needs: build
     runs-on: ubuntu-latest

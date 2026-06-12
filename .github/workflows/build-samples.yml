@@ -1,0 +1,147 @@
+# Build all WebGPU samples from the private vnerhi source repo,
+# then deploy the updated site to GitHub Pages.
+#
+# Trigger this manually whenever new or updated samples are ready to ship.
+# The built WASM files are stored as the "webgpu-samples-wasm" artifact
+# in this repo so the fast deploy.yml can reuse them on every site push.
+#
+# Required secret:
+#   VNERHI_TOKEN — PAT (classic) with "repo" scope on vertexnova/vnerhi,
+#                  or a fine-grained PAT with "Contents: Read" on that repo.
+
+name: Build WebGPU Samples
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: write   # upload artifact
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    name: "Build WASM samples + deploy"
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── Checkout this repo (site source) ──────────────────────────────
+      - name: Checkout vertexnova.github.io
+        uses: actions/checkout@v4
+
+      # ── Checkout private vnerhi source ────────────────────────────────
+      - name: Use HTTPS for GitHub submodule fetch
+        run: |
+          git config --global --add url."https://github.com/".insteadOf "git@github.com:"
+          git config --global --add url."https://github.com/".insteadOf "ssh://git@github.com/"
+
+      - name: Checkout vnerhi (private)
+        uses: actions/checkout@v4
+        with:
+          repository: vertexnova/vnerhi
+          token: ${{ secrets.VNERHI_TOKEN }}
+          submodules: recursive
+          path: _vnerhi
+
+      # ── Emscripten setup ──────────────────────────────────────────────
+      - name: Install Ninja
+        run: sudo apt-get update -qq && sudo apt-get install -y ninja-build
+
+      - name: Install Emscripten
+        uses: mymindstorm/setup-emscripten@v14
+
+      - name: Cache Emscripten ports (emdawnwebgpu)
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.EMSDK }}/upstream/emscripten/cache
+          key: em-ports-${{ runner.os }}-${{ hashFiles('_vnerhi/scripts/ci_prefetch_emdawnwebgpu.sh') }}
+          restore-keys: em-ports-${{ runner.os }}-
+
+      - name: Pre-fetch emdawnwebgpu port
+        run: bash _vnerhi/scripts/ci_prefetch_emdawnwebgpu.sh
+
+      # ── Build ─────────────────────────────────────────────────────────
+      - name: Configure CMake (Release · Samples ON · WebGPU)
+        run: |
+          emcmake cmake -G Ninja \
+            -B _vnerhi/build/wasm/static/Release \
+            -S _vnerhi \
+            -DCMAKE_BUILD_TYPE=Release          \
+            -DVNE_RHI_LIB_TYPE=static           \
+            -DVNE_RHI_DEV=OFF                   \
+            -DVNE_RHI_TESTS=OFF                 \
+            -DVNE_RHI_SAMPLES=ON                \
+            -DVNE_RHI_BACKEND_WEBGPU=ON         \
+            -DVNE_TARGET_PLATFORM=Web           \
+            -DCMAKE_CXX_STANDARD=20             \
+            -DCMAKE_CXX_STANDARD_REQUIRED=ON    \
+            -DCMAKE_CXX_EXTENSIONS=OFF
+
+      - name: Build
+        run: emmake cmake --build _vnerhi/build/wasm/static/Release --parallel "$(nproc)"
+
+      - name: Summarise artifacts
+        run: |
+          BIN=_vnerhi/build/wasm/static/Release/bin
+          COUNT=$(ls "$BIN"/*.html 2>/dev/null | wc -l | tr -d ' ')
+          TOTAL=$(du -sh "$BIN" | cut -f1)
+          echo "Built $COUNT samples · total $TOTAL"
+          echo "## WASM build" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Sample | .wasm size |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|--------|-----------|" >> "$GITHUB_STEP_SUMMARY"
+          for f in "$BIN"/*.wasm; do
+            name=$(basename "$f" .wasm)
+            size=$(du -sh "$f" | cut -f1)
+            echo "| \`$name\` | $size |" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      # ── Copy WASM files into the Astro public directory ───────────────
+      - name: Copy WASM artifacts → public/wasm/
+        run: |
+          mkdir -p public/wasm
+          cp _vnerhi/build/wasm/static/Release/bin/* public/wasm/
+
+      # ── Upload artifact so deploy.yml can reuse it ────────────────────
+      - name: Upload webgpu-samples-wasm artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: webgpu-samples-wasm
+          path: public/wasm/
+          retention-days: 90
+          if-no-files-found: error
+
+      # ── Astro build ───────────────────────────────────────────────────
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm install
+      - run: npx astro check
+      - run: npm run build
+
+      - name: Verify WASM in dist
+        run: |
+          COUNT=$(find dist/wasm -name "*.html" 2>/dev/null | wc -l | tr -d ' ')
+          echo "dist/wasm: $COUNT sample HTML files"
+          echo "- WASM samples deployed: **$COUNT**" >> "$GITHUB_STEP_SUMMARY"
+
+      # ── Deploy ────────────────────────────────────────────────────────
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  deploy:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
