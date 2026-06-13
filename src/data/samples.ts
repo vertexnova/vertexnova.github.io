@@ -12,6 +12,7 @@ export interface SampleGroup {
 }
 
 export const SAMPLE_GROUPS: SampleGroup[] = [
+  // ── 1. Basics ──────────────────────────────────────────────────────────
   {
     id: 'basics',
     label: 'Basics',
@@ -54,6 +55,48 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
       },
     ],
   },
+
+  // ── 2. GUI ─────────────────────────────────────────────────────────────
+  {
+    id: 'gui',
+    label: 'GUI',
+    samples: [
+      {
+        slug: 'imgui-overlay',
+        target: '10_imgui_overlay',
+        title: 'ImGui Overlay',
+        description: 'Integrating Dear ImGui as a debug overlay rendered on top of the 3D scene each frame.',
+      },
+      {
+        slug: 'imgui-panel',
+        target: '11_imgui_panel',
+        title: 'ImGui Panel',
+        description: 'Full-window ImGui panel mode — building interactive parameter editors and debug UIs.',
+      },
+    ],
+  },
+
+  // ── 3. Compute ─────────────────────────────────────────────────────────
+  {
+    id: 'compute',
+    label: 'Compute',
+    samples: [
+      {
+        slug: 'compute',
+        target: '19_compute',
+        title: 'Compute',
+        description: 'A minimal compute shader that writes results into a storage buffer — the "hello world" of WebGPU compute.',
+      },
+      {
+        slug: 'compute-to-render',
+        target: '20_compute_to_render',
+        title: 'Compute to Render',
+        description: 'Particle system: positions integrated by a compute pass each frame and rendered as instanced quads.',
+      },
+    ],
+  },
+
+  // ── 4. Texturing ───────────────────────────────────────────────────────
   {
     id: 'texturing',
     label: 'Texturing',
@@ -90,6 +133,28 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
       },
     ],
   },
+
+  // ── 5. Asset Loading ───────────────────────────────────────────────────
+  {
+    id: 'assets',
+    label: 'Asset Loading',
+    samples: [
+      {
+        slug: 'teapot',
+        target: '09_teapot',
+        title: 'Teapot',
+        description: 'The Utah Teapot with smooth per-vertex normals — a classic mesh test with indexed draws and a depth buffer.',
+      },
+      {
+        slug: 'teapot-normals',
+        target: '21_teapot_normals',
+        title: 'Teapot Normals',
+        description: 'Visualising per-vertex and per-face normals on the teapot using geometry-shader-free line rendering.',
+      },
+    ],
+  },
+
+  // ── 6. Lighting & Materials ────────────────────────────────────────────
   {
     id: 'lighting',
     label: 'Lighting & Materials',
@@ -138,6 +203,28 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
       },
     ],
   },
+
+  // ── 7. Debugging ───────────────────────────────────────────────────────
+  {
+    id: 'debugging',
+    label: 'Debugging',
+    samples: [
+      {
+        slug: 'gpu-debug',
+        target: '28_gpu_debug',
+        title: 'GPU Debug',
+        description: 'Using WebGPU error scopes, debug labels on resources, and push/pop error scope for GPU debugging.',
+      },
+      {
+        slug: 'wireframe',
+        target: '22_wireframe',
+        title: 'Wireframe',
+        description: 'Barycentric-coordinate wireframe overlay in a single pass — no geometry shader, works on any mesh.',
+      },
+    ],
+  },
+
+  // ── 8. Advanced Rendering ──────────────────────────────────────────────
   {
     id: 'advanced',
     label: 'Advanced Rendering',
@@ -161,12 +248,6 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
         description: 'High dynamic range rendering with a float16 render target, Reinhard and ACES filmic tone mapping operators.',
       },
       {
-        slug: 'wireframe',
-        target: '22_wireframe',
-        title: 'Wireframe',
-        description: 'Barycentric-coordinate wireframe overlay in a single pass — no geometry shader, works on any mesh.',
-      },
-      {
         slug: 'line-rendering',
         target: '31_line_rendering',
         title: 'Line Rendering',
@@ -180,24 +261,8 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
       },
     ],
   },
-  {
-    id: 'compute',
-    label: 'Compute',
-    samples: [
-      {
-        slug: 'compute',
-        target: '19_compute',
-        title: 'Compute',
-        description: 'A minimal compute shader that writes results into a storage buffer — the "hello world" of WebGPU compute.',
-      },
-      {
-        slug: 'compute-to-render',
-        target: '20_compute_to_render',
-        title: 'Compute to Render',
-        description: 'Particle system: positions integrated by a compute pass each frame and rendered as instanced quads.',
-      },
-    ],
-  },
+
+  // ── 9. Medical / Volume ────────────────────────────────────────────────
   {
     id: 'medical',
     label: 'Medical / Volume',
@@ -234,6 +299,8 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
       },
     ],
   },
+
+  // ── 10. Transparency (OIT) ─────────────────────────────────────────────
   {
     id: 'oit',
     label: 'Transparency (OIT)',
@@ -258,45 +325,17 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
       },
     ],
   },
+
+  // ── 11. glTF Viewer ────────────────────────────────────────────────────
   {
-    id: 'assets',
-    label: 'Assets & Debug',
+    id: 'gltf',
+    label: 'glTF Viewer',
     samples: [
       {
         slug: 'gltf-viewer',
         target: '43_gltf_viewer',
         title: 'glTF Viewer',
         description: 'Load and render glTF 2.0 scenes with PBR materials, multiple meshes, and a full scene-node hierarchy.',
-      },
-      {
-        slug: 'gpu-debug',
-        target: '28_gpu_debug',
-        title: 'GPU Debug',
-        description: 'Using WebGPU error scopes, debug labels on resources, and push/pop error scope for GPU debugging.',
-      },
-      {
-        slug: 'imgui-overlay',
-        target: '10_imgui_overlay',
-        title: 'ImGui Overlay',
-        description: 'Integrating Dear ImGui as a debug overlay rendered on top of the 3D scene each frame.',
-      },
-      {
-        slug: 'imgui-panel',
-        target: '11_imgui_panel',
-        title: 'ImGui Panel',
-        description: 'Full-window ImGui panel mode — building interactive parameter editors and debug UIs.',
-      },
-      {
-        slug: 'teapot',
-        target: '09_teapot',
-        title: 'Teapot',
-        description: 'The Utah Teapot with smooth per-vertex normals — a classic mesh test with indexed draws and a depth buffer.',
-      },
-      {
-        slug: 'teapot-normals',
-        target: '21_teapot_normals',
-        title: 'Teapot Normals',
-        description: 'Visualising per-vertex and per-face normals on the teapot using geometry-shader-free line rendering.',
       },
     ],
   },
