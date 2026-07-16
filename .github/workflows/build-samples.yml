@@ -2,8 +2,8 @@
 # commit the WASM artifacts to Git LFS under public/wasm/.
 #
 # Trigger this manually whenever new or updated samples are ready to ship.
-# The push to main then triggers deploy.yml, which checks out LFS files
-# and deploys the site.
+# The bot push uses GITHUB_TOKEN, which does not start push workflows, so
+# deploy.yml listens via workflow_run and publishes after this job succeeds.
 #
 # Required secret:
 #   VNERHI_TOKEN — PAT (classic) with "repo" scope on vertexnova/vnerhi,
@@ -111,7 +111,8 @@ jobs:
           rm -rf _vnerhi
 
       # ── Commit public/wasm via Git LFS ────────────────────────────────
-      # Pushing to main triggers deploy.yml, which pulls LFS and publishes.
+      # Note: GITHUB_TOKEN pushes do not trigger deploy.yml on:push.
+      # deploy.yml uses on:workflow_run for this workflow instead.
       - name: Commit WASM samples to Git LFS
         run: |
           git config user.name "github-actions[bot]"

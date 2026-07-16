@@ -3,6 +3,11 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # build-samples.yml pushes with GITHUB_TOKEN, which does NOT trigger
+  # push workflows. Listen for that workflow completing instead.
+  workflow_run:
+    workflows: ["Build WebGPU Samples"]
+    types: [completed]
   workflow_dispatch:
     inputs:
       skip_wasm:
@@ -21,10 +26,15 @@ concurrency:
 
 jobs:
   build:
+    # Skip failed sample builds; still run for push / manual dispatch.
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
+          # workflow_run's github.sha is the triggering workflow commit, which
+          # may predate the LFS push. Always take current main tip instead.
+          ref: ${{ github.event_name == 'workflow_run' && 'main' || github.sha }}
           # Skip LFS when doing a site-only deploy; otherwise pull public/wasm.
           lfs: ${{ !(github.event_name == 'workflow_dispatch' && inputs.skip_wasm) }}
 
@@ -38,12 +48,32 @@ jobs:
       - run: npx astro check
       - run: npm run build
 
-      - name: Deploy summary
+      - name: Verify WASM samples in dist
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.skip_wasm) }}
         run: |
+          set -euo pipefail
           W=$(find dist/wasm -name "*.html" 2>/dev/null | wc -l | tr -d ' ')
           echo "## Deploy" >> "$GITHUB_STEP_SUMMARY"
           echo "- Trigger: \`${{ github.event_name }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "- WASM samples: **${W:-0}**" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${W:-0}" -eq 0 ]; then
+            echo "::error::No WASM samples found in dist/wasm/. Did Build WebGPU Samples commit LFS files?"
+            exit 1
+          fi
+
+          # Fail loudly if checkout forgot to pull LFS (pointer files ~130 bytes).
+          if grep -R --include='*.html' -l 'git-lfs.github.com' dist/wasm >/dev/null 2>&1; then
+            echo "::error::dist/wasm still contains Git LFS pointer files. LFS pull failed."
+            exit 1
+          fi
+
+      - name: Deploy summary (site-only)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.skip_wasm }}
+        run: |
+          echo "## Deploy" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Trigger: \`workflow_dispatch\` (skip_wasm)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- WASM samples: **skipped**" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-pages-artifact@v3
         with:
