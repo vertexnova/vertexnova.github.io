@@ -102,15 +102,18 @@ const catalogJSON = JSON.stringify(
         </div>
 
         <div class="info-bar" id="infoBar">
-          <span class="info-title" id="infoTitle"></span>
-          <p class="info-desc" id="infoDesc"></p>
-          <span class="info-links">
-            <a id="srcLink" href="#" target="_blank" rel="noopener">source</a>
-            <span class="sep">·</span>
-            <a id="standaloneLink" href="#" target="_blank" rel="noopener">standalone</a>
-            <span class="sep">·</span>
-            <a id="reportLink" href="#" target="_blank" rel="noopener">report</a>
-          </span>
+          <div class="info-text">
+            <div class="info-heading">
+              <span class="info-group" id="infoGroup"></span>
+              <h2 class="info-title" id="infoTitle"></h2>
+            </div>
+            <p class="info-desc" id="infoDesc"></p>
+          </div>
+          <nav class="info-links" aria-label="Sample links">
+            <a id="srcLink" href="#" target="_blank" rel="noopener">Source</a>
+            <a id="standaloneLink" href="#" target="_blank" rel="noopener">Standalone</a>
+            <a id="reportLink" href="#" target="_blank" rel="noopener">Report</a>
+          </nav>
         </div>
       </div>
     </div>
@@ -307,64 +310,12 @@ const catalogJSON = JSON.stringify(
   min-height: 0;
 }
 
-/* Frame */
+/* Frame — sample sits centered in the remaining space */
 .frame-area {
   flex: 1;
   position: relative;
   min-height: 0;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Compact bottom info dock — content centered */
-.info-bar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.5rem 0.75rem;
-  min-width: 0;
-  padding: 0.4rem 0.85rem;
-  border-top: 1px solid var(--border);
-  background: var(--panel);
-  text-align: center;
-}
-.info-title {
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
-  font-weight: 650;
-  color: var(--text);
-  letter-spacing: -0.01em;
-  flex-shrink: 0;
-}
-.info-desc {
-  max-width: min(420px, 45vw);
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  color: var(--muted);
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.info-links {
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  flex-shrink: 0;
-}
-.info-links a { color: var(--muted); }
-.info-links a:hover { color: var(--orange-light); }
-.sep { color: var(--border); }
-
-@media (max-width: 700px) {
-  .info-desc { display: none; }
+  background: #0a0a0a;
 }
 
 #sampleFrame {
@@ -374,6 +325,101 @@ const catalogJSON = JSON.stringify(
   height: 100%;
   border: none;
   display: block;
+  background: transparent;
+}
+
+/* Bottom detail dock */
+.info-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  min-width: 0;
+  padding: 0.85rem 1.25rem 1rem;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, rgba(28,28,30,0.98), var(--panel));
+}
+.info-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.info-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.info-group {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--orange-light);
+  background: var(--orange-tint);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.18rem 0.55rem;
+  line-height: 1.2;
+}
+.info-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.info-desc {
+  margin: 0;
+  max-width: 52rem;
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.info-links {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+  padding-top: 0.1rem;
+}
+.info-links a {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.32rem 0.55rem;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.info-links a:hover {
+  color: var(--orange-light);
+  border-color: var(--orange);
+  background: var(--orange-tint);
+}
+
+@media (max-width: 700px) {
+  .info-bar {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem 1rem 0.9rem;
+    gap: 0.75rem;
+  }
+  .info-links {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
 }
 
 /* Overlays */
@@ -463,6 +509,7 @@ const overlayLoading = document.getElementById('overlayLoading');
 const overlayUnavail = document.getElementById('overlayUnavail');
 const infoTitle      = document.getElementById('infoTitle');
 const infoDesc       = document.getElementById('infoDesc');
+const infoGroup      = document.getElementById('infoGroup');
 const srcLink        = document.getElementById('srcLink');
 const standaloneLink = document.getElementById('standaloneLink');
 const reportLink     = document.getElementById('reportLink');
@@ -514,6 +561,10 @@ function loadSample(slug, force = false) {
 
   infoTitle.textContent  = s.title;
   if (infoDesc) infoDesc.textContent = s.description;
+  if (infoGroup) {
+    infoGroup.textContent = s.groupLabel || '';
+    infoGroup.hidden = !s.groupLabel;
+  }
   topbarName.textContent = s.title;
 
   const wasmUrl = '/wasm/' + s.target + '.html';
