@@ -50,32 +50,51 @@ jobs:
           lfs: true
           path: _vnerhi
 
-      # actions/checkout lfs:true does not always pull LFS inside submodules
-      # (testdata/vneresources). Without real textures/meshes, file_packager
-      # embeds ~130-byte LFS pointer text and samples fail at runtime.
-      - name: Pull Git LFS assets (vnerhi + submodules)
+      # actions/checkout lfs:true does not always pull LFS inside submodules.
+      # Every sample packs assets from testdata/vneresources (textures, meshes,
+      # glTF, volumes, fonts, …) — pull the whole repo, not one file.
+      - name: Pull full vneresources Git LFS tree
         working-directory: _vnerhi
         run: |
           set -euo pipefail
           git lfs install --local
           git lfs pull
+
+          # Other submodules may also use LFS; best-effort.
           git submodule foreach --recursive '
-            git lfs install --local || true
-            git lfs pull || true
+            if [ -f .gitattributes ] && grep -q filter=lfs .gitattributes 2>/dev/null; then
+              git lfs install --local
+              git lfs pull
+            fi
           '
-          # Fail fast if testdata is still pointer files
-          SAMPLE_PNG=testdata/vneresources/resources/textures/awesomeface.png
-          if [ ! -f "$SAMPLE_PNG" ]; then
-            echo "::error::Missing $SAMPLE_PNG — is testdata/vneresources checked out?"
+
+          RES=testdata/vneresources
+          if [ ! -d "$RES/.git" ] && [ ! -f "$RES/.git" ]; then
+            echo "::error::Missing $RES submodule checkout"
             exit 1
           fi
-          if head -1 "$SAMPLE_PNG" | grep -q 'git-lfs.github.com'; then
-            echo "::error::$SAMPLE_PNG is still a Git LFS pointer. VNERHI_TOKEN needs LFS access to vertexnova/vneresources."
-            ls -la "$SAMPLE_PNG"
+
+          # Mandatory: materialize every LFS object in vneresources.
+          (
+            cd "$RES"
+            git lfs install --local
+            echo "vneresources LFS files tracked: $(git lfs ls-files | wc -l | tr -d ' ')"
+            git lfs pull
+            git lfs checkout
+          )
+
+          # Fail if ANY pointer file remains under resources/ (all samples).
+          POINTERS=$(grep -RIl --include='*' 'git-lfs.github.com/spec/v1' "$RES/resources" 2>/dev/null || true)
+          if [ -n "$POINTERS" ]; then
+            echo "::error::vneresources still has Git LFS pointer files after pull."
+            echo "VNERHI_TOKEN needs Contents + LFS read on vertexnova/vneresources."
+            echo "$POINTERS" | head -50
             exit 1
           fi
-          SIZE=$(wc -c < "$SAMPLE_PNG" | tr -d ' ')
-          echo "OK: $SAMPLE_PNG is $SIZE bytes (real asset, not LFS pointer)"
+
+          echo "vneresources disk usage: $(du -sh "$RES" | cut -f1)"
+          echo "OK: full vneresources tree materialized (no LFS pointers under resources/)"
+          echo "- vneresources LFS: **pulled** ($(du -sh "$RES" | cut -f1))" >> "$GITHUB_STEP_SUMMARY"
 
       # ── Emscripten setup ──────────────────────────────────────────────
       - name: Install Ninja
