@@ -6,8 +6,9 @@
 # deploy.yml listens via workflow_run and publishes after this job succeeds.
 #
 # Required secret:
-#   VNERHI_TOKEN — PAT (classic) with "repo" scope on vertexnova/vnerhi,
-#                  or a fine-grained PAT with "Contents: Read" on that repo.
+#   VNERHI_TOKEN — PAT (classic) with "repo" scope on vertexnova/vnerhi and
+#                  vertexnova/vneresources (testdata LFS), or a fine-grained
+#                  PAT with Contents: Read + access to both repos' Git LFS.
 
 name: Build WebGPU Samples
 
@@ -46,7 +47,35 @@ jobs:
           repository: vertexnova/vnerhi
           token: ${{ secrets.VNERHI_TOKEN }}
           submodules: recursive
+          lfs: true
           path: _vnerhi
+
+      # actions/checkout lfs:true does not always pull LFS inside submodules
+      # (testdata/vneresources). Without real textures/meshes, file_packager
+      # embeds ~130-byte LFS pointer text and samples fail at runtime.
+      - name: Pull Git LFS assets (vnerhi + submodules)
+        working-directory: _vnerhi
+        run: |
+          set -euo pipefail
+          git lfs install --local
+          git lfs pull
+          git submodule foreach --recursive '
+            git lfs install --local || true
+            git lfs pull || true
+          '
+          # Fail fast if testdata is still pointer files
+          SAMPLE_PNG=testdata/vneresources/resources/textures/awesomeface.png
+          if [ ! -f "$SAMPLE_PNG" ]; then
+            echo "::error::Missing $SAMPLE_PNG — is testdata/vneresources checked out?"
+            exit 1
+          fi
+          if head -1 "$SAMPLE_PNG" | grep -q 'git-lfs.github.com'; then
+            echo "::error::$SAMPLE_PNG is still a Git LFS pointer. VNERHI_TOKEN needs LFS access to vertexnova/vneresources."
+            ls -la "$SAMPLE_PNG"
+            exit 1
+          fi
+          SIZE=$(wc -c < "$SAMPLE_PNG" | tr -d ' ')
+          echo "OK: $SAMPLE_PNG is $SIZE bytes (real asset, not LFS pointer)"
 
       # ── Emscripten setup ──────────────────────────────────────────────
       - name: Install Ninja
@@ -149,6 +178,19 @@ jobs:
               print("lib/ contents were not copied or not built. Check VNE shared-library outputs.")
               sys.exit(1)
           print("All required side modules present.")
+
+          # Catch LFS pointers accidentally packed into .data packages
+          bad = []
+          for data in root.glob("*.data"):
+              blob = data.read_bytes()
+              if b"git-lfs.github.com/spec/v1" in blob:
+                  bad.append(data.name)
+          if bad:
+              print("::error::These .data packages contain Git LFS pointer text (assets not pulled):")
+              for name in bad:
+                  print(" -", name)
+              sys.exit(1)
+          print("No LFS pointers found inside .data packages.")
           PY
 
           rm -rf _vnerhi
