@@ -1,6 +1,9 @@
 # build output
 dist/
 
+# private vnerhi checkout + WASM build tree (CI only)
+_vnerhi/
+
 # generated types
 .astro/
 

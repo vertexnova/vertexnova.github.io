@@ -92,7 +92,7 @@ body:
       label: Steps to reproduce
       description: How can we reproduce the issue?
       value: |
-        1. Open https://vertexnova.github.io/samples/
+        1. Open https://vertexnova.github.io/
         2. Click "..."
         3. ...
     validations:

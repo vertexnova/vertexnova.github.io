@@ -1,9 +1,9 @@
-# Build all WebGPU samples from the private vnerhi source repo,
-# then deploy the updated site to GitHub Pages.
+# Build all WebGPU samples from the private vnerhi source repo and
+# commit the WASM artifacts to Git LFS under public/wasm/.
 #
 # Trigger this manually whenever new or updated samples are ready to ship.
-# The built WASM files are stored as the "webgpu-samples-wasm" artifact
-# in this repo so the fast deploy.yml can reuse them on every site push.
+# The push to main then triggers deploy.yml, which checks out LFS files
+# and deploys the site.
 #
 # Required secret:
 #   VNERHI_TOKEN — PAT (classic) with "repo" scope on vertexnova/vnerhi,
@@ -15,24 +15,24 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-  actions: write   # upload artifact
+  contents: write
 
 concurrency:
-  group: pages
+  group: build-samples
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
-    name: "Build WASM samples + deploy"
+  build-wasm:
+    name: "Build WASM samples → Git LFS"
     runs-on: ubuntu-latest
 
     steps:
       # ── Checkout this repo (site source) ──────────────────────────────
       - name: Checkout vertexnova.github.io
         uses: actions/checkout@v4
+        with:
+          lfs: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # ── Checkout private vnerhi source ────────────────────────────────
       - name: Use HTTPS for GitHub submodule fetch
@@ -105,44 +105,25 @@ jobs:
       - name: Copy WASM artifacts → public/wasm/
         run: |
           mkdir -p public/wasm
+          # Replace previous sample set so deleted samples disappear from LFS too
+          find public/wasm -mindepth 1 -delete
           cp _vnerhi/build/wasm/static/Release/bin/* public/wasm/
+          rm -rf _vnerhi
 
-      # ── Upload artifact so deploy.yml can reuse it ────────────────────
-      - name: Upload webgpu-samples-wasm artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: webgpu-samples-wasm
-          path: public/wasm/
-          retention-days: 90
-          if-no-files-found: error
-
-      # ── Astro build ───────────────────────────────────────────────────
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: npm
-
-      - run: npm install
-      - run: npx astro check
-      - run: npm run build
-
-      - name: Verify WASM in dist
+      # ── Commit public/wasm via Git LFS ────────────────────────────────
+      # Pushing to main triggers deploy.yml, which pulls LFS and publishes.
+      - name: Commit WASM samples to Git LFS
         run: |
-          COUNT=$(find dist/wasm -name "*.html" 2>/dev/null | wc -l | tr -d ' ')
-          echo "dist/wasm: $COUNT sample HTML files"
-          echo "- WASM samples deployed: **$COUNT**" >> "$GITHUB_STEP_SUMMARY"
-
-      # ── Deploy ────────────────────────────────────────────────────────
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist/
-
-  deploy:
-    needs: build-and-deploy
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git lfs install --local
+          git add public/wasm .gitattributes
+          if git diff --cached --quiet; then
+            echo "No WASM changes to commit."
+            echo "- LFS commit: **none** (no changes)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            COUNT=$(ls public/wasm/*.html 2>/dev/null | wc -l | tr -d ' ')
+            git commit -m "chore: update WebGPU sample WASM artifacts ($COUNT samples, LFS)"
+            git push
+            echo "- LFS commit: **pushed** ($COUNT samples)" >> "$GITHUB_STEP_SUMMARY"
+          fi
