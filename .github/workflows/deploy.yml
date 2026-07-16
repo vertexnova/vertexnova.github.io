@@ -45,6 +45,12 @@ jobs:
           cache: npm
 
       - run: npm install
+
+      # GitHub Pages cannot send COOP/COEP; inject the COI SW into each sample HTML.
+      - name: Inject COI service worker into WASM HTML
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.skip_wasm) }}
+        run: node scripts/inject-coi.mjs public/wasm
+
       - run: npx astro check
       - run: npm run build
 

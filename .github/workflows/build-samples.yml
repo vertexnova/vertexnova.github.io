@@ -109,6 +109,8 @@ jobs:
           find public/wasm -mindepth 1 -delete
           cp _vnerhi/build/wasm/static/Release/bin/* public/wasm/
           rm -rf _vnerhi
+          # GitHub Pages cannot send COOP/COEP; each sample HTML must load the COI SW.
+          node scripts/inject-coi.mjs public/wasm
 
       # ── Commit public/wasm via Git LFS ────────────────────────────────
       # Note: GITHUB_TOKEN pushes do not trigger deploy.yml on:push.
