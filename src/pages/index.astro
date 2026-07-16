@@ -545,11 +545,12 @@ searchInput?.addEventListener('input', () => {
 
 // ── Load sample ────────────────────────────────────────────────────
 let currentSlug = null;
+const loadingLabel = document.querySelector('#overlayLoading span');
 
-function loadSample(slug) {
+function loadSample(slug, force = false) {
   const s = catalog.find(x => x.slug === slug);
   if (!s) return;
-  if (currentSlug === slug) return;
+  if (!force && currentSlug === slug) return;
   currentSlug = slug;
 
   if (window.location.hash !== '#' + slug) {
@@ -580,6 +581,14 @@ function loadSample(slug) {
   overlayUnavail.hidden   = true;
   sampleFrame.src         = 'about:blank';
 
+  // Same-origin iframes inherit isolation from the top-level page. Never
+  // navigate the frame until this page is crossOriginIsolated.
+  if (!window.crossOriginIsolated) {
+    if (loadingLabel) loadingLabel.textContent = 'Enabling cross-origin isolation…';
+    return;
+  }
+
+  if (loadingLabel) loadingLabel.textContent = 'Loading…';
   requestAnimationFrame(() => { sampleFrame.src = wasmUrl; });
   closePanel();
 }
@@ -618,4 +627,14 @@ function handleHash() {
 }
 window.addEventListener('popstate', handleHash);
 handleHash();
+
+// coi-serviceworker.js usually full-reloads once. If isolation arrives
+// without reload, force-load the pending sample into the iframe.
+if (!window.crossOriginIsolated) {
+  const timer = setInterval(() => {
+    if (!window.crossOriginIsolated) return;
+    clearInterval(timer);
+    if (currentSlug) loadSample(currentSlug, true);
+  }, 100);
+}
 </script>

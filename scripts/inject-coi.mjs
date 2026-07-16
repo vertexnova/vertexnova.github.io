@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
- * Inject /coi-serviceworker.js into every public/wasm/*.html sample page.
- * GitHub Pages cannot set COOP/COEP headers; the SW adds them at runtime so
- * SharedArrayBuffer / WebGPU samples can run (standalone and in the iframe).
+ * Prepare public/wasm/*.html for GitHub Pages:
+ *  1. Inject /coi-serviceworker.js (Pages cannot set COOP/COEP headers)
+ *  2. Replace Emscripten's instant crossOriginIsolated hard-fail with a
+ *     deferred check so the service worker can reload/isolate first.
  */
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -10,24 +11,44 @@ import { join } from "node:path";
 const DIR = process.argv[2] || "public/wasm";
 const SNIPPET = '<script src="/coi-serviceworker.js"></script>';
 
+/** Emscripten emits this exact check; replace with a SW-friendly version. */
+const OLD_CHECK_RE =
+  /crossOriginIsolated\|\|window\.addEventListener\("DOMContentLoaded",\(\(\)=>\{showError\("This page requires cross-origin isolation \(COOP \+ COEP headers\)\. Serve via scripts\/build_wasm\.sh --serve, or configure your server to send:\\nCross-Origin-Opener-Policy: same-origin\\nCross-Origin-Embedder-Policy: require-corp"\)\}\)\)/;
+
+// Waits for COI (parent inheritance in iframe, or SW reload at top-level).
+const NEW_CHECK =
+  '(function(){function fail(){showError("This page requires cross-origin isolation (COOP + COEP headers). Serve via scripts/build_wasm.sh --serve, or configure your server to send:\\nCross-Origin-Opener-Policy: same-origin\\nCross-Origin-Embedder-Policy: require-corp")}if(window.crossOriginIsolated)return;var n=0;var t=setInterval(function(){if(window.crossOriginIsolated){clearInterval(t);return}if(++n>=60){clearInterval(t);fail()}},100)})();';
+
 const files = (await readdir(DIR)).filter((f) => f.endsWith(".html"));
-let patched = 0;
+let injected = 0;
+let checks = 0;
 
 for (const name of files) {
   const path = join(DIR, name);
   let html = await readFile(path, "utf8");
-  if (html.includes("coi-serviceworker")) continue;
+  let changed = false;
 
-  if (html.includes("<head>")) {
-    html = html.replace("<head>", `<head>${SNIPPET}`);
-  } else if (/<head\s[^>]*>/i.test(html)) {
-    html = html.replace(/<head\s[^>]*>/i, (m) => `${m}${SNIPPET}`);
-  } else {
-    html = SNIPPET + html;
+  if (!html.includes("coi-serviceworker")) {
+    if (html.includes("<head>")) {
+      html = html.replace("<head>", `<head>${SNIPPET}`);
+    } else if (/<head\s[^>]*>/i.test(html)) {
+      html = html.replace(/<head\s[^>]*>/i, (m) => `${m}${SNIPPET}`);
+    } else {
+      html = SNIPPET + html;
+    }
+    injected++;
+    changed = true;
   }
 
-  await writeFile(path, html);
-  patched++;
+  if (OLD_CHECK_RE.test(html)) {
+    html = html.replace(OLD_CHECK_RE, NEW_CHECK);
+    checks++;
+    changed = true;
+  }
+
+  if (changed) await writeFile(path, html);
 }
 
-console.log(`inject-coi: patched ${patched}/${files.length} HTML files in ${DIR}`);
+console.log(
+  `inject-coi: ${files.length} HTML in ${DIR} · injected SW into ${injected} · patched COI check in ${checks}`
+);
