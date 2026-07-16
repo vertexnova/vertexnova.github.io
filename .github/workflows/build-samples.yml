@@ -89,6 +89,7 @@ jobs:
       - name: Summarise artifacts
         run: |
           BIN=_vnerhi/build/wasm/static/Release/bin
+          LIB=_vnerhi/build/wasm/static/Release/lib
           COUNT=$(ls "$BIN"/*.html 2>/dev/null | wc -l | tr -d ' ')
           TOTAL=$(du -sh "$BIN" | cut -f1)
           echo "Built $COUNT samples · total $TOTAL"
@@ -100,14 +101,56 @@ jobs:
             size=$(du -sh "$f" | cut -f1)
             echo "| \`$name\` | $size |" >> "$GITHUB_STEP_SUMMARY"
           done
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Shared / side modules (\`lib/\`)" >> "$GITHUB_STEP_SUMMARY"
+          if [ -d "$LIB" ]; then
+            ls -la "$LIB" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "_no lib/ directory_" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       # ── Copy WASM files into the Astro public directory ───────────────
       - name: Copy WASM artifacts → public/wasm/
         run: |
+          set -euo pipefail
+          BIN=_vnerhi/build/wasm/static/Release/bin
+          LIB=_vnerhi/build/wasm/static/Release/lib
+
           mkdir -p public/wasm
           # Replace previous sample set so deleted samples disappear from LFS too
           find public/wasm -mindepth 1 -delete
-          cp _vnerhi/build/wasm/static/Release/bin/* public/wasm/
+          cp "$BIN"/* public/wasm/
+
+          # Samples MAIN_MODULE-link against shared deps and dlopen them at
+          # runtime (e.g. libvnemath.so.SOVERSION, libassimp.so.*, libNrrdIO.so).
+          # Those artifacts live in lib/, not bin/.
+          if [ -d "$LIB" ]; then
+            find "$LIB" -maxdepth 1 -type f -exec cp -a {} public/wasm/ \;
+            # Materialize versioned symlinks under their link names
+            find "$LIB" -maxdepth 1 -type l | while read -r link; do
+              cp -aL "$link" "public/wasm/$(basename "$link")"
+            done
+          fi
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, sys
+          root = Path("public/wasm")
+          needed = set()
+          for wasm in root.glob("*.wasm"):
+              needed.update(
+                  m.decode()
+                  for m in re.findall(rb"lib[a-zA-Z0-9_]+\.so[a-zA-Z0-9_.]*", wasm.read_bytes())
+              )
+          missing = sorted(n for n in needed if not (root / n).exists())
+          print("Required side modules:", ", ".join(sorted(needed)) or "(none)")
+          if missing:
+              print("::error::Missing side modules in public/wasm:", ", ".join(missing))
+              print("lib/ contents were not copied or not built. Check VNE shared-library outputs.")
+              sys.exit(1)
+          print("All required side modules present.")
+          PY
+
           rm -rf _vnerhi
           # GitHub Pages cannot send COOP/COEP; each sample HTML must load the COI SW.
           node scripts/inject-coi.mjs public/wasm
