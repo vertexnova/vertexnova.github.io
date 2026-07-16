@@ -79,16 +79,8 @@ const catalogJSON = JSON.stringify(
         <span id="topbarName" class="topbar-name"></span>
       </div>
 
-      <!-- Welcome splash (compact — sample list is the main nav) -->
-      <div class="welcome" id="welcome">
-        <div class="welcome-inner">
-          <p>Select a sample from the list to run it live.</p>
-          <a href="/support" class="support-cta">Browser support →</a>
-        </div>
-      </div>
-
       <!-- Sample frame: canvas fills; compact info docked at bottom -->
-      <div class="sample-view" id="sampleView" hidden>
+      <div class="sample-view" id="sampleView">
         <div class="frame-area">
           <iframe
             id="sampleFrame"
@@ -306,47 +298,6 @@ const catalogJSON = JSON.stringify(
   white-space: nowrap;
 }
 
-/* Welcome */
-.welcome {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 1.25rem;
-}
-.welcome-inner { max-width: 280px; }
-.welcome-mark {
-  font-size: 1.5rem;
-  color: var(--orange);
-  margin-bottom: 0.5rem;
-  opacity: 0.85;
-}
-.welcome-inner h2 {
-  font-family: var(--font-sans);
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 0.35rem;
-  letter-spacing: -0.02em;
-}
-.welcome-inner p {
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
-  color: var(--muted);
-  line-height: 1.5;
-  margin-bottom: 0;
-}
-.support-cta {
-  display: inline-block;
-  margin-top: 0.65rem;
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: var(--orange-light);
-}
-.support-cta:hover { color: var(--orange); }
-
 /* Sample view — canvas fills; info docks at bottom */
 .sample-view {
   flex: 1;
@@ -362,18 +313,24 @@ const catalogJSON = JSON.stringify(
   position: relative;
   min-height: 0;
   background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Compact bottom info dock */
+/* Compact bottom info dock — content centered */
 .info-bar {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
   min-width: 0;
-  padding: 0.35rem 0.85rem;
+  padding: 0.4rem 0.85rem;
   border-top: 1px solid var(--border);
   background: var(--panel);
+  text-align: center;
 }
 .info-title {
   font-family: var(--font-sans);
@@ -384,8 +341,7 @@ const catalogJSON = JSON.stringify(
   flex-shrink: 0;
 }
 .info-desc {
-  flex: 1;
-  min-width: 0;
+  max-width: min(420px, 45vw);
   margin: 0;
   font-family: var(--font-sans);
   font-size: 0.72rem;
@@ -402,7 +358,6 @@ const catalogJSON = JSON.stringify(
   font-family: var(--font-mono);
   font-size: 0.68rem;
   flex-shrink: 0;
-  margin-left: auto;
 }
 .info-links a { color: var(--muted); }
 .info-links a:hover { color: var(--orange-light); }
@@ -503,7 +458,6 @@ const panel          = document.getElementById('panel');
 const backdrop       = document.getElementById('backdrop');
 const panelClose     = document.getElementById('panelClose');
 const menuBtn        = document.getElementById('menuBtn');
-const welcome        = document.getElementById('welcome');
 const sampleView     = document.getElementById('sampleView');
 const sampleFrame    = document.getElementById('sampleFrame');
 const overlayLoading = document.getElementById('overlayLoading');
@@ -572,9 +526,6 @@ function loadSample(slug, force = false) {
   issueUrl.searchParams.set('title', '[WebGPU] ' + s.title);
   reportLink.href = issueUrl.toString();
 
-  welcome.hidden          = true;
-  welcome.style.display   = '';
-  sampleView.hidden       = false;
   overlayLoading.hidden   = false;
   overlayUnavail.hidden   = true;
   sampleFrame.src         = 'about:blank';

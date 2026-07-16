@@ -10,6 +10,8 @@ import { join } from "node:path";
 
 const DIR = process.argv[2] || "public/wasm";
 const SNIPPET = '<script src="/coi-serviceworker.js"></script>';
+const CENTER_STYLE =
+  '<style id="vne-embed-center">html,body{height:100%}body{justify-content:center!important;min-height:100%!important;box-sizing:border-box}</style>';
 
 /** Emscripten emits this exact check; replace with a SW-friendly version. */
 const OLD_CHECK_RE =
@@ -22,6 +24,7 @@ const NEW_CHECK =
 const files = (await readdir(DIR)).filter((f) => f.endsWith(".html"));
 let injected = 0;
 let checks = 0;
+let centered = 0;
 
 for (const name of files) {
   const path = join(DIR, name);
@@ -40,6 +43,18 @@ for (const name of files) {
     changed = true;
   }
 
+  if (!html.includes("vne-embed-center")) {
+    if (html.includes("<head>")) {
+      html = html.replace("<head>", `<head>${CENTER_STYLE}`);
+    } else if (/<head\s[^>]*>/i.test(html)) {
+      html = html.replace(/<head\s[^>]*>/i, (m) => `${m}${CENTER_STYLE}`);
+    } else {
+      html = CENTER_STYLE + html;
+    }
+    centered++;
+    changed = true;
+  }
+
   if (OLD_CHECK_RE.test(html)) {
     html = html.replace(OLD_CHECK_RE, NEW_CHECK);
     checks++;
@@ -50,5 +65,5 @@ for (const name of files) {
 }
 
 console.log(
-  `inject-coi: ${files.length} HTML in ${DIR} · injected SW into ${injected} · patched COI check in ${checks}`
+  `inject-coi: ${files.length} HTML in ${DIR} · SW ${injected} · center ${centered} · COI check ${checks}`
 );
