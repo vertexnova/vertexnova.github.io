@@ -3,19 +3,7 @@ export interface Sample {
   target: string;
   title: string;
   description: string;
-  /** Highlighted in the catalog as a good first look at the engine. */
-  featured?: boolean;
 }
-
-/** Showcasing set used for the Start-here rack. Samples remain in their groups. */
-export const FEATURED_SLUGS = [
-  'triangle',
-  'cube',
-  'lighting',
-  'pbr-material',
-  'volume-rendering',
-  'gltf-viewer',
-] as const;
 
 export interface SampleGroup {
   id: string;
@@ -39,14 +27,12 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
         slug: 'triangle',
         target: '01_triangle',
         title: 'Triangle',
-        featured: true,
         description: 'The classic first step: a colored triangle rendered with a vertex and fragment shader using a hard-coded vertex buffer.',
       },
       {
         slug: 'cube',
         target: '02_cube',
         title: 'Cube',
-        featured: true,
         description: 'A rotating 3D cube with per-face colors, demonstrating index buffers, uniform buffers, and a perspective projection matrix.',
       },
       {
@@ -177,7 +163,6 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
         slug: 'lighting',
         target: '12_lighting',
         title: 'Lighting',
-        featured: true,
         description: 'Phong shading with ambient, diffuse, and specular components computed per-fragment in a WGSL shader.',
       },
       {
@@ -208,7 +193,6 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
         slug: 'pbr-material',
         target: '23_pbr_material',
         title: 'PBR Material',
-        featured: true,
         description: 'Physically-based rendering with the metallic–roughness workflow, Fresnel reflectance, and image-based lighting.',
       },
       {
@@ -287,7 +271,6 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
         slug: 'volume-rendering',
         target: '33_volume_rendering',
         title: 'Volume Rendering',
-        featured: true,
         description: 'Ray-marched volumetric rendering of medical imaging data (CT/MRI) with a configurable transfer function.',
       },
       {
@@ -352,7 +335,6 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
         slug: 'gltf-viewer',
         target: '43_gltf_viewer',
         title: 'glTF Viewer',
-        featured: true,
         description: 'Load and render glTF 2.0 scenes with PBR materials, multiple meshes, and a full scene-node hierarchy.',
       },
     ],
