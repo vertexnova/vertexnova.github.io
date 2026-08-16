@@ -30,7 +30,7 @@ jobs:
     steps:
       # ── Checkout this repo (site source) ──────────────────────────────
       - name: Checkout vertexnova.github.io
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           lfs: true
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -42,7 +42,7 @@ jobs:
           git config --global --add url."https://github.com/".insteadOf "ssh://git@github.com/"
 
       - name: Checkout vnerhi (private)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: vertexnova/vnerhi
           token: ${{ secrets.VNERHI_TOKEN }}
@@ -173,9 +173,9 @@ jobs:
           # runtime (e.g. libvnemath.so.SOVERSION, libassimp.so.*, libNrrdIO.so).
           # Those artifacts live in lib/, not bin/.
           if [ -d "$LIB" ]; then
-            find "$LIB" -maxdepth 1 -type f -exec cp -a {} public/wasm/ \;
-            # Materialize versioned symlinks under their link names
-            find "$LIB" -maxdepth 1 -type l | while read -r link; do
+            # Runtime dlopen needs shared objects, not static archives (.a).
+            find "$LIB" -maxdepth 1 -type f \( -name '*.so' -o -name '*.so.*' \) -exec cp -a {} public/wasm/ \;
+            find "$LIB" -maxdepth 1 -type l \( -name '*.so' -o -name '*.so.*' \) | while read -r link; do
               cp -aL "$link" "public/wasm/$(basename "$link")"
             done
           fi

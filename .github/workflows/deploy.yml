@@ -30,13 +30,37 @@ jobs:
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           # workflow_run's github.sha is the triggering workflow commit, which
           # may predate the LFS push. Always take current main tip instead.
           ref: ${{ github.event_name == 'workflow_run' && 'main' || github.sha }}
-          # Skip LFS when doing a site-only deploy; otherwise pull public/wasm.
-          lfs: ${{ !(github.event_name == 'workflow_dispatch' && inputs.skip_wasm) }}
+          # Pointers only here; real WASM is restored from cache or git lfs pull.
+          lfs: false
+
+      - name: Restore Git LFS object cache
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.skip_wasm) }}
+        uses: actions/cache@v4
+        with:
+          path: .git/lfs
+          key: wasm-lfs-${{ hashFiles('public/wasm/**') }}
+          restore-keys: wasm-lfs-
+
+      - name: Materialize WASM from LFS
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.skip_wasm) }}
+        run: |
+          set -euo pipefail
+          git lfs install --local
+          # Prefer local objects (cache hit) so we do not burn LFS bandwidth.
+          git lfs checkout || true
+          if grep -R --include='*.html' --include='*.wasm' --include='*.js' --include='*.data' -l 'git-lfs.github.com' public/wasm >/dev/null 2>&1; then
+            echo "LFS cache miss — fetching objects from GitHub"
+            git lfs pull
+          fi
+          if grep -R --include='*.html' --include='*.wasm' --include='*.js' --include='*.data' -l 'git-lfs.github.com' public/wasm >/dev/null 2>&1; then
+            echo "::error::Git LFS pull left pointer files. If the log says 'exceeded its LFS budget', raise the Git LFS budget under the org Billing settings (Budgets and alerts). A \$0 LFS budget blocks clones/deploys for the rest of the month."
+            exit 1
+          fi
 
       # ── Astro build ───────────────────────────────────────────────────
       - uses: actions/setup-node@v4
