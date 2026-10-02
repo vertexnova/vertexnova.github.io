@@ -61,6 +61,12 @@ if (typeof window === "undefined") {
   });
 } else {
   (() => {
+    // Sample iframes share sessionStorage with the top page. Never let an
+    // embedded shell register, mutate COI flags, or reload itself.
+    if (window.top !== window) {
+      return;
+    }
+
     const reloadedBySelf = window.sessionStorage.getItem("coiReloadedBySelf");
     window.sessionStorage.removeItem("coiReloadedBySelf");
     const coepDegrading = reloadedBySelf == "coepdegrade";
@@ -78,10 +84,34 @@ if (typeof window === "undefined") {
     const n = navigator;
     const controlling = n.serviceWorker && n.serviceWorker.controller;
 
+    // Once isolation succeeds, forget a prior COEP failure so a single bad
+    // visit does not stick for the rest of the session.
+    if (window.crossOriginIsolated) {
+      window.sessionStorage.removeItem("coiCoepHasFailed");
+      window.sessionStorage.removeItem("coiReloadAttempts");
+      return;
+    }
+
     if (controlling && !window.crossOriginIsolated) {
       window.sessionStorage.setItem("coiCoepHasFailed", "true");
     }
     const coepHasFailed = window.sessionStorage.getItem("coiCoepHasFailed");
+
+    function reloadOnce(reason) {
+      const attempts = Number(window.sessionStorage.getItem("coiReloadAttempts") || "0");
+      if (attempts >= 2) {
+        !coi.quiet &&
+          console.warn(
+            "COOP/COEP Service Worker: giving up after reload attempts. Allow service workers, then refresh."
+          );
+        return false;
+      }
+      window.sessionStorage.setItem("coiReloadAttempts", String(attempts + 1));
+      window.sessionStorage.setItem("coiReloadedBySelf", reason);
+      !coi.quiet && console.log("Reloading page for COOP/COEP (" + reason + ").");
+      coi.doReload(reason);
+      return true;
+    }
 
     if (controlling) {
       const reloadToDegrade =
@@ -94,9 +124,8 @@ if (typeof window === "undefined") {
             : coi.coepCredentialless(),
       });
       if (reloadToDegrade) {
-        !coi.quiet && console.log("Reloading page to degrade COEP.");
-        window.sessionStorage.setItem("coiReloadedBySelf", "coepdegrade");
-        coi.doReload("coepdegrade");
+        reloadOnce("coepdegrade");
+        return;
       }
 
       if (coi.shouldDeregister()) {
@@ -122,7 +151,20 @@ if (typeof window === "undefined") {
       return;
     }
 
-    n.serviceWorker.register(window.document.currentScript.src).then(
+    // Reload when the SW takes control after registration — covers the race
+    // where updatefound fires before a listener is attached.
+    let reloading = false;
+    n.serviceWorker.addEventListener("controllerchange", () => {
+      if (reloading) return;
+      reloading = true;
+      reloadOnce("controllerchange");
+    });
+
+    const scriptUrl = window.document.currentScript
+      ? window.document.currentScript.src
+      : "/coi-serviceworker.js";
+
+    n.serviceWorker.register(scriptUrl).then(
       (registration) => {
         !coi.quiet &&
           console.log(
@@ -131,22 +173,28 @@ if (typeof window === "undefined") {
           );
 
         registration.addEventListener("updatefound", () => {
-          !coi.quiet &&
-            console.log(
-              "Reloading page to make use of updated COOP/COEP Service Worker."
-            );
-          window.sessionStorage.setItem("coiReloadedBySelf", "updatefound");
-          coi.doReload();
+          reloadOnce("updatefound");
         });
 
-        if (registration.active && !n.serviceWorker.controller) {
-          !coi.quiet &&
-            console.log(
-              "Reloading page to make use of COOP/COEP Service Worker."
-            );
-          window.sessionStorage.setItem("coiReloadedBySelf", "notcontrolling");
-          coi.doReload();
-        }
+        // Wait until the SW is ready. If it still is not controlling this
+        // client (or isolation is still false), reload once so the next
+        // document load is under COOP/COEP.
+        Promise.resolve(n.serviceWorker.ready)
+          .then(() => {
+            if (window.crossOriginIsolated) return;
+            if (!n.serviceWorker.controller) {
+              reloadOnce("notcontrolling");
+              return;
+            }
+            // Controlled but not isolated yet — headers may need a fresh load.
+            if (!reloadedBySelf) {
+              reloadOnce("needisolation");
+            }
+          })
+          .catch((err) => {
+            !coi.quiet &&
+              console.error("COOP/COEP Service Worker ready failed:", err);
+          });
       },
       (err) => {
         !coi.quiet &&

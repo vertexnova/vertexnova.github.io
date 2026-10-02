@@ -1,19 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap');
+@import '@fontsource-variable/inter';
+@import '@fontsource/space-grotesk/500.css';
+@import '@fontsource/space-grotesk/600.css';
+@import '@fontsource/space-grotesk/700.css';
+@import '@fontsource-variable/jetbrains-mono';
 
 :root {
-  --bg:           #1C1C1E;
-  --panel:        #232325;
-  --panel-mid:    #2C2C2E;
-  --panel-hover:  #323234;
-  --border:       #3A3A3C;
-  --orange:       #E8622A;
-  --orange-light: #F28C5E;
-  --orange-dark:  #7A3315;
-  --orange-tint:  #2A1507;
-  --text:         #EBEBF0;
-  --muted:        #98989D;
-  --font-sans:    'Geist', system-ui, sans-serif;
-  --font-mono:    'Geist Mono', 'Fira Mono', monospace;
+  --bg:            #0B0B0F;
+  --bg-elevated:   #101016;
+  --panel:         rgba(18, 18, 24, 0.88);
+  --panel-solid:   #121218;
+  --panel-mid:     #1A1A22;
+  --panel-hover:   #22222C;
+  --border:        #2A2A36;
+  --border-soft:   rgba(255, 255, 255, 0.06);
+  --orange:        #F97316;
+  --orange-light:  #FDBA74;
+  --orange-dark:   #9A3412;
+  --orange-tint:   rgba(249, 115, 22, 0.12);
+  --orange-glow:   rgba(249, 115, 22, 0.28);
+  --text:          #F4F4F5;
+  --muted:         #9CA3AF;
+  --muted-dim:     #6B7280;
+  --radius:        12px;
+  --radius-sm:     8px;
+  --font-sans:     'Inter Variable', Inter, system-ui, sans-serif;
+  --font-display:  'Space Grotesk', var(--font-sans);
+  --font-mono:     'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, monospace;
+  --gradient-brand: linear-gradient(135deg, #F97316 0%, #FDBA74 100%);
+  --gradient-bg:
+    radial-gradient(ellipse 80% 50% at 10% -10%, rgba(249, 115, 22, 0.14), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 90% 0%, rgba(59, 130, 246, 0.08), transparent 50%),
+    var(--bg);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -22,9 +39,11 @@ html { font-size: 16px; }
 
 body {
   font-family: var(--font-sans);
-  background: var(--bg);
+  background: var(--gradient-bg);
+  background-attachment: fixed;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 a { color: var(--orange-light); text-decoration: none; }
@@ -37,4 +56,12 @@ code {
   color: var(--orange-light);
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

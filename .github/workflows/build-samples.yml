@@ -167,7 +167,14 @@ jobs:
           mkdir -p public/wasm
           # Replace previous sample set so deleted samples disappear from LFS too
           find public/wasm -mindepth 1 -delete
-          cp "$BIN"/* public/wasm/
+
+          # Sample payloads only — never copy static archives (.a) from bin/.
+          find "$BIN" -maxdepth 1 -type f \( \
+            -name '??_*.html' -o \
+            -name '??_*.js' -o \
+            -name '??_*.wasm' -o \
+            -name '??_*.data' \
+          \) -exec cp -a {} public/wasm/ \;
 
           # Samples MAIN_MODULE-link against shared deps and dlopen them at
           # runtime (e.g. libvnemath.so.SOVERSION, libassimp.so.*, libNrrdIO.so).
