@@ -19,7 +19,7 @@ Every sample in [vnerhi](https://github.com/vertexnova/vnerhi) targets the same 
 | Linux | — | ✓ | ✓ |
 | iOS / iPadOS | ✓ | — | — |
 | Android / tablet | — | ✓ | — |
-| Web (this site) | — | — | ✓ |
+| Web | — | — | ✓ |
 
 This site hosts the **WebGPU** (WASM) builds for the browser.
 
