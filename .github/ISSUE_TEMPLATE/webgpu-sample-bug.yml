@@ -60,7 +60,6 @@ body:
         - Slice Rendering (40_slice_rendering)
         - GPU Debug (41_gpu_debug)
         - glTF Viewer (42_gltf_viewer)
-        - USD Viewer (43_usd_viewer)
         - Push Constants (44_push_constants)
         - Multithreading (45_multithreading)
         - Multithreaded Picking (46_multithreaded_picking)

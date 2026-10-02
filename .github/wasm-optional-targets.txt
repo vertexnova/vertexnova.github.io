@@ -1,5 +1,3 @@
 # Optional WASM targets excluded from strict verify failures.
 # One target basename per line. Lines starting with # are ignored.
-#
-# USD Viewer needs VNE_RHI_ENABLE_USD and is not shipped for WebGPU/WASM.
-43_usd_viewer
+# Leave empty to require every catalog sample to have public/wasm/<target>.html.

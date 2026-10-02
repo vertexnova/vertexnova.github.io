@@ -394,7 +394,7 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
     ],
   },
 
-  // ── Tooling & viewers 41–43 ────────────────────────────────────────────
+  // ── Tooling & viewers 41–42 ────────────────────────────────────────────
   {
     id: 'viewers',
     label: 'Tooling & Viewers',
@@ -412,13 +412,6 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
         target: '42_gltf_viewer',
         title: 'glTF Viewer',
         description: 'glTF 2.0 scene graph with per-material PBR rendering.',
-      },
-      {
-        number: '43',
-        slug: 'usd-viewer',
-        target: '43_usd_viewer',
-        title: 'USD Viewer',
-        description: 'USD stage load with materials, joints, and camera controls. Desktop only — not available in the browser.',
       },
     ],
   },

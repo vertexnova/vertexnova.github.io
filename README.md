@@ -114,7 +114,8 @@ Curriculum order (`00`–`48`). Source: [vnerhi/samples](https://github.com/vert
 ### Tooling & Viewers
 - `41` GPU Debug
 - `42` glTF Viewer
-- `43` USD Viewer — desktop only (not available in the browser)
+
+`43` USD Viewer is available in [vnerhi](https://github.com/vertexnova/vnerhi) on desktop (Metal / Vulkan / WebGPU native) but is **not** shipped for the browser.
 
 ### Advanced
 - `44` Push Constants
