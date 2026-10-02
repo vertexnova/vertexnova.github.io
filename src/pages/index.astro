@@ -173,29 +173,43 @@ const availableCount = catalog.filter(s => s.available).length;
           </button>
 
           <div class="info-card" id="infoBar">
-            <div class="info-text">
+            <div class="info-top">
               <div class="info-heading">
                 <span class="info-group" id="infoGroup"></span>
                 <span class="info-num" id="infoNum"></span>
               </div>
-              <h2 class="info-title" id="infoTitle"></h2>
-              <p class="info-desc" id="infoDesc"></p>
-            </div>
-            <div class="info-tools">
-              <div class="nav-arrows" aria-label="Curriculum navigation">
-                <button type="button" class="icon-btn" id="prevBtn" title="Previous sample (←)" aria-label="Previous sample">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M15 18l-6-6 6-6"/></svg>
-                </button>
-                <button type="button" class="icon-btn" id="nextBtn" title="Next sample (→)" aria-label="Next sample">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M9 18l6-6-6-6"/></svg>
+              <div class="info-top-actions">
+                <div class="nav-arrows" aria-label="Curriculum navigation">
+                  <button type="button" class="icon-btn" id="prevBtn" title="Previous sample (←)" aria-label="Previous sample">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M15 18l-6-6 6-6"/></svg>
+                  </button>
+                  <button type="button" class="icon-btn" id="nextBtn" title="Next sample (→)" aria-label="Next sample">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25"><path d="M9 18l6-6-6-6"/></svg>
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  class="icon-btn info-toggle"
+                  id="infoToggleBtn"
+                  title="Collapse summary"
+                  aria-expanded="true"
+                  aria-controls="infoDetails"
+                >
+                  <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
                 </button>
               </div>
-              <nav class="info-links" aria-label="Sample links">
-                <a id="srcLink" href="#" target="_blank" rel="noopener" class="icon-btn text" title="Source">Source</a>
-                <a id="standaloneLink" href="#" target="_blank" rel="noopener" class="icon-btn text" title="Open standalone">Standalone</a>
-                <button type="button" class="icon-btn text" id="fullscreenBtn" title="Enter fullscreen (F)" aria-pressed="false">Fullscreen</button>
-                <a id="reportLink" href="#" target="_blank" rel="noopener" class="icon-btn text" title="Report a bug">Report</a>
-              </nav>
+            </div>
+            <h2 class="info-title" id="infoTitle"></h2>
+            <div class="info-details" id="infoDetails">
+              <p class="info-desc" id="infoDesc"></p>
+              <div class="info-tools">
+                <nav class="info-links" aria-label="Sample links">
+                  <a id="srcLink" href="#" target="_blank" rel="noopener" class="icon-btn text" title="Source">Source</a>
+                  <a id="standaloneLink" href="#" target="_blank" rel="noopener" class="icon-btn text" title="Open standalone">Standalone</a>
+                  <button type="button" class="icon-btn text" id="fullscreenBtn" title="Enter fullscreen (F)" aria-pressed="false">Fullscreen</button>
+                  <a id="reportLink" href="#" target="_blank" rel="noopener" class="icon-btn text" title="Report a bug">Report</a>
+                </nav>
+              </div>
             </div>
           </div>
         </div>
@@ -515,34 +529,46 @@ const availableCount = catalog.filter(s => s.available).length;
   bottom: 1rem;
   z-index: 5;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 1rem 1.5rem;
-  padding: 0.95rem 1.15rem;
-  background: rgba(12, 12, 18, 0.78);
-  backdrop-filter: blur(16px) saturate(1.3);
-  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.85rem 1.1rem;
+  background: rgba(12, 12, 18, 0.55);
+  backdrop-filter: blur(14px) saturate(1.25);
+  -webkit-backdrop-filter: blur(14px) saturate(1.25);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius);
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.45),
-    0 0 0 1px rgba(249, 115, 22, 0.06);
+    0 10px 32px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(249, 115, 22, 0.05);
   pointer-events: auto;
   max-width: min(920px, calc(100% - 2rem));
   margin: 0 auto;
+  transition: padding 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
-.info-text {
-  flex: 1;
-  min-width: 0;
+.info-card.collapsed {
+  padding: 0.55rem 0.85rem;
+  background: rgba(12, 12, 18, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
+}
+.info-top {
   display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+}
+.info-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
 }
 .info-heading {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+  min-width: 0;
 }
 .info-group {
   display: inline-flex;
@@ -567,11 +593,28 @@ const availableCount = catalog.filter(s => s.available).length;
 .info-title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.2rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.03em;
   line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.info-card.collapsed .info-title {
+  font-size: 0.95rem;
+}
+.info-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.info-card.collapsed .info-details {
+  display: none;
+}
+.info-card.collapsed .info-group {
+  display: none;
 }
 .info-desc {
   margin: 0;
@@ -588,13 +631,19 @@ const availableCount = catalog.filter(s => s.available).length;
 .info-tools {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 0.45rem;
   flex-shrink: 0;
 }
 .nav-arrows {
   display: flex;
   gap: 0.3rem;
+}
+.info-toggle .chevron {
+  transition: transform 0.2s ease;
+}
+.info-card.collapsed .info-toggle .chevron {
+  transform: rotate(-180deg);
 }
 .icon-btn {
   appearance: none;
@@ -775,18 +824,24 @@ const availableCount = catalog.filter(s => s.available).length;
   .topbar { display: flex; }
 
   .info-card {
-    left: 0.65rem;
-    right: 0.65rem;
-    bottom: 0.65rem;
-    flex-direction: column;
-    align-items: stretch;
-    padding: 0.8rem 0.9rem;
-    gap: 0.7rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    gap: 0.3rem;
+    background: rgba(12, 12, 18, 0.38);
+    backdrop-filter: blur(10px) saturate(1.15);
+    -webkit-backdrop-filter: blur(10px) saturate(1.15);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
   }
+  .info-card.collapsed {
+    padding: 0.4rem 0.6rem;
+    background: rgba(12, 12, 18, 0.28);
+  }
+  .info-title { font-size: 1rem; }
   .info-tools { align-items: stretch; }
-  .nav-arrows { justify-content: flex-start; }
-  .info-links { justify-content: flex-start; }
-  .info-desc { -webkit-line-clamp: 3; }
+  .info-links { justify-content: flex-start; flex-wrap: wrap; }
+  .info-desc { -webkit-line-clamp: 2; }
   .search-kbd { display: none; }
 }
 </style>
@@ -822,10 +877,45 @@ const prevBtn        = document.getElementById('prevBtn');
 const nextBtn        = document.getElementById('nextBtn');
 const fullscreenBtn  = document.getElementById('fullscreenBtn');
 const exitFsBtn      = document.getElementById('exitFsBtn');
+const infoBar        = document.getElementById('infoBar');
+const infoToggleBtn  = document.getElementById('infoToggleBtn');
 const loadingLabel   = document.querySelector('#overlayLoading span');
 
 const LOAD_TIMEOUT_MS = 20000;
+const INFO_COLLAPSE_KEY = 'vn-info-collapsed';
 const hasWebGPU = typeof navigator !== 'undefined' && !!navigator.gpu;
+
+function isMobileLayout() {
+  return window.matchMedia('(max-width: 700px)').matches;
+}
+
+function setInfoCollapsed(collapsed) {
+  if (!infoBar) return;
+  infoBar.classList.toggle('collapsed', collapsed);
+  if (infoToggleBtn) {
+    infoToggleBtn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    infoToggleBtn.title = collapsed ? 'Expand summary' : 'Collapse summary';
+  }
+  try {
+    localStorage.setItem(INFO_COLLAPSE_KEY, collapsed ? '1' : '0');
+  } catch (_) { /* ignore */ }
+}
+
+function initInfoCollapse() {
+  let collapsed;
+  try {
+    const stored = localStorage.getItem(INFO_COLLAPSE_KEY);
+    if (stored === '1') collapsed = true;
+    else if (stored === '0') collapsed = false;
+  } catch (_) { /* ignore */ }
+  if (collapsed === undefined) collapsed = isMobileLayout();
+  setInfoCollapsed(collapsed);
+}
+
+infoToggleBtn?.addEventListener('click', () => {
+  setInfoCollapsed(!infoBar?.classList.contains('collapsed'));
+});
+initInfoCollapse();
 
 let currentSlug = null;
 let currentFrame = null;
