@@ -223,6 +223,21 @@ jobs:
           # GitHub Pages cannot send COOP/COEP; each sample HTML must load the COI SW.
           node scripts/inject-coi.mjs public/wasm
 
+      - name: Setup Node (catalog verify)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install npm deps for verify
+        run: npm install
+
+      - name: Verify WASM catalog (strict)
+        run: |
+          set -euo pipefail
+          npm run verify:wasm -- --strict public/wasm
+          echo "- Catalog verify: **strict ok**" >> "$GITHUB_STEP_SUMMARY"
+
       # ── Commit public/wasm via Git LFS ────────────────────────────────
       # Note: GITHUB_TOKEN pushes do not trigger deploy.yml on:push.
       # deploy.yml uses on:workflow_run for this workflow instead.

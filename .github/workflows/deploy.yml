@@ -75,6 +75,26 @@ jobs:
         if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.skip_wasm) }}
         run: node scripts/inject-coi.mjs public/wasm
 
+      - name: Verify WASM catalog (public/wasm)
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.skip_wasm) }}
+        run: |
+          set +e
+          npm run verify:wasm -- public/wasm
+          code=$?
+          set -e
+          echo "## Deploy" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Trigger: \`${{ github.event_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$code" -eq 1 ]; then
+            echo "::error::Zero live catalog samples in public/wasm. Re-run Build WebGPU Samples."
+            exit 1
+          fi
+          if [ "$code" -eq 2 ]; then
+            echo "::warning::Partial WASM/catalog match — some samples will show as Soon until the next Build WebGPU Samples run."
+            echo "- Catalog verify: **partial** (exit 2)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "- Catalog verify: **ok**" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - run: npx astro check
       - run: npm run build
 
@@ -83,9 +103,7 @@ jobs:
         run: |
           set -euo pipefail
           W=$(find dist/wasm -name "*.html" 2>/dev/null | wc -l | tr -d ' ')
-          echo "## Deploy" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Trigger: \`${{ github.event_name }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- WASM samples: **${W:-0}**" >> "$GITHUB_STEP_SUMMARY"
+          echo "- WASM HTML in dist: **${W:-0}**" >> "$GITHUB_STEP_SUMMARY"
 
           if [ "${W:-0}" -eq 0 ]; then
             echo "::error::No WASM samples found in dist/wasm/. Did Build WebGPU Samples commit LFS files?"
@@ -96,6 +114,18 @@ jobs:
           if grep -R --include='*.html' -l 'git-lfs.github.com' dist/wasm >/dev/null 2>&1; then
             echo "::error::dist/wasm still contains Git LFS pointer files. LFS pull failed."
             exit 1
+          fi
+
+          set +e
+          npm run verify:wasm -- dist/wasm
+          code=$?
+          set -e
+          if [ "$code" -eq 1 ]; then
+            echo "::error::Zero live catalog samples in dist/wasm after build."
+            exit 1
+          fi
+          if [ "$code" -eq 2 ]; then
+            echo "::warning::dist/wasm catalog still partial (legacy artifact names or incomplete rebuild)."
           fi
 
       - name: Deploy summary (site-only)

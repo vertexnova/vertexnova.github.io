@@ -1,46 +1,109 @@
-# Astro Starter Kit: Basics
+# VertexNova WebGPU Samples
 
-```sh
-npm create astro@latest -- --template basics
-```
+Interactive WebGPU samples from the [vnerhi](https://github.com/vertexnova/vnerhi) rendering engine.
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+**Live site:** https://vertexnova.github.io/
 
-## 🚀 Project Structure
+Open the site, pick a sample from the list, and it runs in the browser. Use ← / → to move through the curriculum, or search to filter.
 
-Inside of your Astro project, you'll see the following folders and files:
+If something does not start, check [browser support](https://vertexnova.github.io/support/).
 
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
-```
+## Platforms & backends
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+Every sample in [vnerhi](https://github.com/vertexnova/vnerhi) targets the same curriculum across platforms:
 
-## 🧞 Commands
+| Platform | Metal | Vulkan | WebGPU |
+|----------|:-----:|:------:|:------:|
+| macOS | ✓ | ✓ (MoltenVK) | ✓ |
+| Windows | — | ✓ | ✓ |
+| Linux | — | ✓ | ✓ |
+| iOS / iPadOS | ✓ | — | — |
+| Android | — | ✓ | — |
+| Browser (this site) | — | — | ✓ |
 
-All commands are run from the root of the project, from a terminal:
+This site hosts the **WebGPU** (browser / WASM) builds.
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+## Samples
 
-## 👀 Want to learn more?
+Curriculum order (`00`–`48`). Source: [vnerhi/samples](https://github.com/vertexnova/vnerhi/tree/main/samples).
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+### Foundations
+- `00` Window
+- `01` Triangle
+- `02` Cube
+- `03` Two Cubes
+- `04` Fractal Cube
+- `05` MSAA
+- `06` Instancing
+
+### UI
+- `07` ImGui Overlay
+- `08` ImGui Panel
+
+### Textures
+- `09` Texturing
+- `10` Sampler Parameters
+- `11` Texture Mipmap
+- `12` Cubemap
+
+### Lighting & Camera
+- `13` Lighting
+- `14` Camera Controller
+
+### Mesh & Compute
+- `15` Teapot
+- `16` Compute
+- `17` Compute to Render
+- `18` Metaballs
+
+### Mesh & Compute Together
+- `19` Teapot Normals
+- `20` Wireframe
+- `21` PBR Material
+
+### Surface Detail & Shadows
+- `22` Normal Mapping
+- `23` Environment Mapping
+- `24` Reflection
+- `25` HDR & Tone Mapping
+- `26` Shadow Mapping
+
+### Depth & Render State
+- `27` Depth Precision
+- `28` Stencil Testing
+- `29` Blending
+- `30` Deferred Shading
+
+### Transparency (OIT)
+- `31` OIT — A-Buffer
+- `32` OIT — Dual Depth Peeling
+- `33` OIT — Weighted Blended
+
+### Annotation Primitives
+- `34` Line Rendering
+- `35` Point Rendering
+- `36` Text Rendering
+- `37` GPU Picking
+
+### Volume
+- `38` Volume Rendering
+- `39` Volume Windowing
+- `40` Slice Rendering
+
+### Tooling & Viewers
+- `41` GPU Debug
+- `42` glTF Viewer
+- `43` USD Viewer
+
+### Advanced
+- `44` Push Constants
+- `45` Multithreading
+- `46` Multithreaded Picking
+- `47` Offscreen Worker
+- `48` Render Bundles
+
+## Report a bug
+
+1. Open the sample that fails.
+2. Click **Report** in the sample toolbar (or use [this form](https://github.com/vertexnova/vertexnova.github.io/issues/new?template=webgpu-sample-bug.yml)).
+3. Include browser, OS, and GPU if you can, plus any console errors (F12 → Console).

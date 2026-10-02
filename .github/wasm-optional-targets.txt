@@ -1,0 +1,6 @@
+# Optional WASM targets excluded from strict verify failures.
+# One target basename per line (e.g. 43_usd_viewer). Lines starting with # are ignored.
+# Leave empty to require every catalog sample to have public/wasm/<target>.html.
+#
+# Example (when USD is not enabled in the WASM CI build):
+# 43_usd_viewer

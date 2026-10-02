@@ -9,7 +9,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "verify:wasm": "tsx scripts/verify-wasm-catalog.mjs",
+    "generate:issue-template": "tsx scripts/generate-issue-template-samples.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^5.0.4",
@@ -21,6 +23,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.8",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   }
 }
