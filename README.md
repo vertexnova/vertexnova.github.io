@@ -17,7 +17,7 @@ Every sample in [vnerhi](https://github.com/vertexnova/vnerhi) targets the same 
 | macOS | ✓ | ✓ (MoltenVK) | ✓ |
 | Windows | — | ✓ | ✓ |
 | Linux | — | ✓ | ✓ |
-| iOS / iPadOS | ✓ | — | — |
+| iPhone / IPad  | ✓ | — | — |
 | Android / tablet | — | ✓ | — |
 | Web | — | — | ✓ |
 
