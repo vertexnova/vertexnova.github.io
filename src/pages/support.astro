@@ -16,35 +16,32 @@ const browsers: BrowserRow[] = [
     desktop: 'yes',
     android: 'yes',
     ios: 'no',
-    notes: 'WebGPU enabled by default since Chrome 113 (May 2023).',
+    notes:
+      'Windows/macOS/ChromeOS from Chrome 113. Android 12+ from Chrome 121 (Qualcomm/ARM/Intel GPUs; expanding). Linux: Intel Gen12+ from 144, NVIDIA Wayland from 147; others often behind flags.',
   },
   {
     browser: 'Microsoft Edge',
     desktop: 'yes',
     android: 'yes',
     ios: 'no',
-    notes: 'WebGPU enabled by default since Edge 113.',
+    notes:
+      'Tracks Chromium WebGPU (113+ on Windows/macOS). Edge is available on supported Linux distros; WebGPU there follows Chromium’s Linux rollout.',
   },
   {
     browser: 'Safari',
     desktop: 'yes',
     android: '—',
     ios: 'yes',
-    notes: 'WebGPU enabled by default since Safari 18 (macOS Sequoia / iOS 18, Sep 2024).',
+    notes:
+      'WebGPU enabled by default in Safari 26 on macOS Tahoe 26, iOS 26, iPadOS 26, and visionOS 26.',
   },
   {
     browser: 'Firefox',
-    desktop: 'flag',
-    android: 'no',
+    desktop: 'partial',
+    android: 'flag',
     ios: 'no',
-    notes: 'Behind dom.webgpu.enabled flag. Not recommended for production use yet.',
-  },
-  {
-    browser: 'Samsung Internet',
-    desktop: '—',
-    android: 'partial',
-    ios: '—',
-    notes: 'WebGPU support in progress; availability depends on the Chromium base version.',
+    notes:
+      'Enabled by default on Windows from Firefox 141; Apple Silicon macOS from 145 (broader macOS from 147). Linux works with dom.webgpu.enabled in about:config. Android remains experimental.',
   },
 ];
 
@@ -135,27 +132,27 @@ const statusClass: Record<string, string> = {
           <span class="platform-status">Works out of the box</span>
         </div>
         <p class="platform-desc">
-          WebGPU is enabled by default in Chrome 113+ and Edge 113+. No configuration needed.
+          WebGPU is enabled by default in Chrome 113+ and Edge 113+ on Windows and macOS.
+          Linux support is newer and GPU-dependent (see the notes table above).
         </p>
         <div class="steps">
-          <div class="step"><span class="step-num">1</span><span>Update Chrome or Edge to version 113 or later.</span></div>
+          <div class="step"><span class="step-num">1</span><span>Update Chrome or Edge (Windows/macOS: 113+; Linux: prefer 144+ on supported GPUs).</span></div>
           <div class="step"><span class="step-num">2</span><span>Open any sample — it should launch immediately.</span></div>
-          <div class="step"><span class="step-num">3</span><span>If a sample fails, open <code>chrome://gpu</code> and verify that <strong>WebGPU</strong> shows <em>Enabled</em>.</span></div>
+          <div class="step"><span class="step-num">3</span><span>If a sample fails, open <code>chrome://gpu</code> (or <code>edge://gpu</code>) and verify that <strong>WebGPU</strong> shows <em>Enabled</em>.</span></div>
         </div>
       </div>
 
       <div class="platform-block">
         <div class="platform-header">
-          <span class="platform-badge supported">Safari — macOS & iOS 18+</span>
+          <span class="platform-badge supported">Safari — macOS & iOS 26+</span>
           <span class="platform-status">Works out of the box</span>
         </div>
         <p class="platform-desc">
-          WebGPU shipped in Safari 18 (macOS Sequoia 15, iOS 18, September 2024).
+          WebGPU shipped enabled by default in Safari 26 (macOS Tahoe 26, iOS 26, iPadOS 26).
         </p>
         <div class="steps">
-          <div class="step"><span class="step-num">1</span><span>On <strong>macOS</strong>: update to macOS Sequoia 15 + Safari 18, or install <a href="https://developer.apple.com/safari/technology-preview/" target="_blank" rel="noopener">Safari Technology Preview</a>.</span></div>
-          <div class="step"><span class="step-num">2</span><span>On <strong>iOS / iPadOS</strong>: update to iOS 18.</span></div>
-          <div class="step"><span class="step-num">3</span><span>If on Safari 17, enable manually: <strong>Safari → Settings → Feature Flags → WebGPU</strong>.</span></div>
+          <div class="step"><span class="step-num">1</span><span>On <strong>macOS</strong>: update to macOS Tahoe 26 + Safari 26, or use <a href="https://developer.apple.com/safari/technology-preview/" target="_blank" rel="noopener">Safari Technology Preview</a>.</span></div>
+          <div class="step"><span class="step-num">2</span><span>On <strong>iOS / iPadOS</strong>: update to version 26.</span></div>
         </div>
       </div>
 
@@ -165,30 +162,31 @@ const statusClass: Record<string, string> = {
           <span class="platform-status">Works out of the box</span>
         </div>
         <p class="platform-desc">
-          WebGPU is available on Chrome for Android (version 121+) on Vulkan-capable devices.
+          WebGPU is available on Chrome for Android (version 121+) on Android 12+ with supported GPUs (Qualcomm, ARM, Intel; expanding).
         </p>
         <div class="steps">
           <div class="step"><span class="step-num">1</span><span>Update Chrome to version 121 or later.</span></div>
-          <div class="step"><span class="step-num">2</span><span>If WebGPU is unavailable, check <code>chrome://gpu</code> — your device may not support Vulkan.</span></div>
+          <div class="step"><span class="step-num">2</span><span>If WebGPU is unavailable, check <code>chrome://gpu</code> — your device or GPU may not be enabled yet.</span></div>
         </div>
       </div>
 
       <div class="platform-block">
         <div class="platform-header">
           <span class="platform-badge flag">Firefox — Desktop</span>
-          <span class="platform-status">Behind a flag</span>
+          <span class="platform-status">Windows / recent macOS shipping; Linux experimental</span>
         </div>
         <p class="platform-desc">
-          WebGPU is implemented but gated behind an about:config flag. Expect rough edges.
+          WebGPU is on by default in Firefox 141+ on Windows and in recent Firefox releases on Apple Silicon macOS.
+          On Linux, enable WebGPU in <code>about:config</code>. Android remains experimental.
         </p>
         <div class="steps">
-          <div class="step"><span class="step-num">1</span><span>Open <code>about:config</code> and accept the warning.</span></div>
-          <div class="step"><span class="step-num">2</span><span>Search for <code>dom.webgpu.enabled</code> and set it to <strong>true</strong>.</span></div>
-          <div class="step"><span class="step-num">3</span><span>On Windows, also enable <code>gfx.webrender.all</code> if samples fail.</span></div>
-          <div class="step"><span class="step-num">4</span><span>Restart Firefox and try the sample.</span></div>
+          <div class="step"><span class="step-num">1</span><span>Update Firefox (141+ on Windows; 145+ recommended on macOS).</span></div>
+          <div class="step"><span class="step-num">2</span><span>On <strong>Linux</strong>: open <code>about:config</code>, set <code>dom.webgpu.enabled</code> to <strong>true</strong>, then restart Firefox.</span></div>
+          <div class="step"><span class="step-num">3</span><span>On Android / Nightly builds you may also need <code>gfx.webgpu.ignore-blocklist</code>.</span></div>
+          <div class="step"><span class="step-num">4</span><span>Prefer Chrome, Edge, or Safari 26+ if a sample fails.</span></div>
         </div>
         <div class="platform-warning">
-          ⚠ Firefox WebGPU may be incomplete or unstable. Some samples may not work correctly.
+          ⚠ Firefox WebGPU coverage still varies by OS. See the <a href="https://github.com/gpuweb/gpuweb/wiki/Implementation-Status" target="_blank" rel="noopener">gpuweb Implementation Status</a>.
         </div>
       </div>
 

@@ -18,10 +18,31 @@ Every sample in [vnerhi](https://github.com/vertexnova/vnerhi) targets the same 
 | Windows | — | ✓ | ✓ |
 | Linux | — | ✓ | ✓ |
 | iOS / iPadOS | ✓ | — | — |
-| Android | — | ✓ | — |
-| Browser (this site) | — | — | ✓ |
+| Android / tablet | — | ✓ | — |
+| Web (this site) | — | — | ✓ |
 
-This site hosts the **WebGPU** (browser / WASM) builds.
+This site hosts the **WebGPU** (WASM) builds for the browser.
+
+### WebGPU in browsers
+
+Status follows the [WebGPU Implementation Status](https://github.com/gpuweb/gpuweb/wiki/Implementation-Status) wiki and [Chrome WebGPU overview](https://developer.chrome.com/docs/web-platform/webgpu/overview).
+
+| Browser | Windows | macOS | Linux | Android | iOS / iPadOS |
+|---------|---------|-------|-------|---------|--------------|
+| Chrome / Chromium | **113+** | **113+** | **144+**\* | **121+**† | —‡ |
+| Microsoft Edge | **113+** | **113+** | **144+**\* | **121+**† | —‡ |
+| Safari | — | **26+** | — | — | **26+** |
+| Firefox | **141+** | **145+**§ | **Flag**¶ | —¶ | — |
+
+\* Linux: Intel Gen12+ from **144+**; NVIDIA Wayland often **147+**. Other GPUs may need flags — see the [implementation status](https://github.com/gpuweb/gpuweb/wiki/Implementation-Status). Edge is available on supported Linux distros ([Microsoft Learn](https://learn.microsoft.com/en-us/DeployEdge/microsoft-edge-supported-operating-systems)).  
+† Android **12+** with supported GPUs (Qualcomm / ARM / Intel; expanding). Check `chrome://gpu` if a sample fails.  
+‡ iPhone / iPad: Safari **26+** only. Chrome and Edge are not supported for these samples.  
+§ Apple Silicon from **145+**; broader macOS from **147+**.  
+¶ Firefox on Linux works when WebGPU is enabled in `about:config` (`dom.webgpu.enabled` = **true**). Android remains experimental / Nightly in many builds.
+
+More detail: [browser support](https://vertexnova.github.io/support/).
+
+
 
 ## Samples
 
