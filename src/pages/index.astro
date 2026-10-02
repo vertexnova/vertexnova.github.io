@@ -1054,15 +1054,32 @@ reloadSampleBtn?.addEventListener('click', () => {
 prevBtn?.addEventListener('click', () => navigateRelative(-1));
 nextBtn?.addEventListener('click', () => navigateRelative(1));
 
-fullscreenBtn?.addEventListener('click', () => {
+function syncFullscreenUI() {
+  const active = !!document.fullscreenElement;
+  if (fullscreenBtn) {
+    fullscreenBtn.textContent = active ? 'Exit fullscreen' : 'Fullscreen';
+    fullscreenBtn.title = active ? 'Exit fullscreen (Esc / F)' : 'Enter fullscreen (F)';
+    fullscreenBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  }
+  if (exitFsBtn) exitFsBtn.hidden = !active;
+}
+
+function toggleFullscreen() {
   const el = frameArea;
   if (!el) return;
   if (document.fullscreenElement) {
-    document.exitFullscreen?.();
+    document.exitFullscreen?.().catch(() => {});
   } else {
-    el.requestFullscreen?.();
+    el.requestFullscreen?.().catch(() => {});
   }
+}
+
+fullscreenBtn?.addEventListener('click', toggleFullscreen);
+exitFsBtn?.addEventListener('click', () => {
+  document.exitFullscreen?.().catch(() => {});
 });
+document.addEventListener('fullscreenchange', syncFullscreenUI);
+syncFullscreenUI();
 
 document.querySelectorAll('.sample-link').forEach(el => {
   el.addEventListener('click', e => {
