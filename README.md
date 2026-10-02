@@ -93,7 +93,7 @@ Curriculum order (`00`–`48`). Source: [vnerhi/samples](https://github.com/vert
 ### Tooling & Viewers
 - `41` GPU Debug
 - `42` glTF Viewer
-- `43` USD Viewer
+- `43` USD Viewer — desktop only (not available in the browser)
 
 ### Advanced
 - `44` Push Constants

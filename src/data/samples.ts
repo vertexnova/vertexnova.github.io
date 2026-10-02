@@ -418,7 +418,7 @@ export const SAMPLE_GROUPS: SampleGroup[] = [
         slug: 'usd-viewer',
         target: '43_usd_viewer',
         title: 'USD Viewer',
-        description: 'USD stage load with materials, joints, and camera controls.',
+        description: 'USD stage load with materials, joints, and camera controls. Desktop only — not available in the browser.',
       },
     ],
   },
